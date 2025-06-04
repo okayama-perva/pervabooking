@@ -195,6 +195,21 @@ async function reserve() {
 		// エラー発生時はボタン復元
 		reserveBtn.disabled = false;
 		reserveBtn.innerText = originalText;
+		// 失敗ログを保存
+		await db.collection('error_logs').add({
+			timestamp: new Date().toISOString().replace('Z', '+09:00'),
+			uid,
+			username,
+			room,
+			date,
+			start,
+			end,
+			memo,
+			errorMessage: err.message,
+			stage: 'Googleカレンダー登録',
+			formData: Object.fromEntries(formData.entries()), // 送信内容を確認用に保存
+		});
+
 		console.error(err.message); // optional
 		return;
 	}

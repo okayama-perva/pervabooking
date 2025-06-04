@@ -259,5 +259,7 @@ async function reserve() {
 	});
 
 	alert('予約が完了しました！');
+	reserveBtn.disabled = false;
+	reserveBtn.innerText = originalText;
 	renderRoomWiseList(date);
 }

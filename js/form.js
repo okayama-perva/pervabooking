@@ -1,0 +1,225 @@
+// ✅ 予約フォーム関連処理（form.js）
+let selectedType = '社内';
+function selectType(type) {
+	selectedType = type;
+	['社内', '来客', 'ZOOM'].forEach((t) => {
+		document.getElementById(`tab-${t}`).classList.remove('bg-blue-100', 'font-bold');
+	});
+	document.getElementById(`tab-${type}`).classList.add('bg-blue-100', 'font-bold');
+}
+// 会議室、プレハブ個室、商談室の選択UI
+function selectRoom(room) {
+	document.getElementById('room').value = room;
+
+	const roomColorMap = {
+		room1: ['bg-blue-100', 'text-blue-800'],
+		room2: ['bg-green-100', 'text-green-800'],
+		room3: ['bg-purple-100', 'text-purple-800'],
+	};
+
+	['room1', 'room2', 'room3'].forEach((r) => {
+		const btn = document.getElementById(`room-${r}`);
+		btn.classList.remove(
+			'bg-blue-100',
+			'text-blue-800',
+			'bg-green-100',
+			'text-green-800',
+			'bg-purple-100',
+			'text-purple-800',
+			'font-bold'
+		);
+	});
+
+	const selectedBtn = document.getElementById(`room-${room}`);
+	selectedBtn.classList.add(...roomColorMap[room], 'font-bold');
+}
+
+function generateTimeOptions() {
+	const startSelect = document.getElementById('start_time');
+	const endSelect = document.getElementById('end_time');
+
+	// 7:00〜22:00までの範囲（30分刻み）
+	for (let h = 7; h <= 22; h++) {
+		for (let m of [0, 30]) {
+			const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+			const option1 = document.createElement('option');
+			const option2 = document.createElement('option');
+			option1.value = option1.textContent = time;
+			option2.value = option2.textContent = time;
+			startSelect.appendChild(option1);
+			endSelect.appendChild(option2);
+		}
+	}
+}
+
+document.getElementById('start_time').addEventListener('change', function () {
+	const selectedStart = this.value;
+	const endSelect = document.getElementById('end_time');
+	const currentEnd = endSelect.value;
+
+	endSelect.innerHTML = '';
+
+	// 先頭に空の選択肢（比較対象にならない）
+	const emptyOption = document.createElement('option');
+	emptyOption.value = '';
+	emptyOption.textContent = '';
+	endSelect.appendChild(emptyOption);
+
+	for (let h = 7; h <= 22; h++) {
+		for (let m of [0, 30]) {
+			const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+			if (time > selectedStart) {
+				const option = document.createElement('option');
+				option.value = option.textContent = time;
+				endSelect.appendChild(option);
+			}
+		}
+	}
+
+	if (currentEnd > selectedStart) {
+		endSelect.value = currentEnd;
+	}
+});
+
+document.getElementById('end_time').addEventListener('change', function () {
+	const selectedEnd = this.value;
+	const startSelect = document.getElementById('start_time');
+	const currentStart = startSelect.value;
+
+	startSelect.innerHTML = '';
+
+	const emptyOption = document.createElement('option');
+	emptyOption.value = '';
+	emptyOption.textContent = '';
+	startSelect.appendChild(emptyOption);
+
+	for (let h = 7; h <= 22; h++) {
+		for (let m of [0, 30]) {
+			const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+			if (time < selectedEnd) {
+				const option = document.createElement('option');
+				option.value = option.textContent = time;
+				startSelect.appendChild(option);
+			}
+		}
+	}
+
+	if (currentStart < selectedEnd) {
+		startSelect.value = currentStart;
+	}
+});
+
+async function reserve() {
+	const reserveBtn = document.getElementById('reserveBtn');
+	if (reserveBtn.disabled) return; // 二重送信防止
+	// ボタンの表示切替＆無効化
+	reserveBtn.disabled = true;
+	const originalText = reserveBtn.innerText;
+	reserveBtn.innerText = '予約中...';
+
+	const room = document.getElementById('room')?.value;
+	const date = document.getElementById('list-date')?.value;
+	const startTime = document.getElementById('start_time')?.value;
+	const endTime = document.getElementById('end_time')?.value;
+	const memo = document.getElementById('memo')?.value || '';
+
+	if (!room || !date || !startTime || !endTime) {
+		alert('すべての項目を入力してください。');
+		return;
+	}
+
+	if (startTime >= endTime) {
+		alert('終了時間は開始時間より後にしてください。');
+		return;
+	}
+
+	const start = `${date} ${startTime}`;
+	const end = `${date} ${endTime}`;
+
+	const snapshot = await db.collection('reservations').where('room', '==', room).where('date', '==', date).get();
+
+	const overlap = snapshot.docs.some((doc) => {
+		const data = doc.data();
+		return !(end <= data.start || start >= data.end);
+	});
+
+	if (overlap) {
+		alert('この時間帯はすでに予約があります！');
+		return;
+	}
+	const roomNames = {
+		room1: '会議室',
+		room2: '個室',
+		room3: '商談室',
+	};
+
+	const roomName = roomNames[room] || room; // カレンダー送信用に変換
+
+	const uid = auth.currentUser.uid;
+	const userDoc = await db.collection('users').doc(uid).get();
+	const username = userDoc.exists ? userDoc.data().username : '未登録';
+
+	// Googleカレンダーに登録
+	const formData = new URLSearchParams();
+	formData.append('summary', `${roomName}｜${selectedType}｜${username}`);
+	formData.append('description', memo || '（メモなし）');
+	formData.append('start', `${date}T${startTime}:00+09:00`);
+	formData.append('end', `${date}T${endTime}:00+09:00`);
+	formData.append('location', roomName);
+
+	let eventId = null;
+
+	try {
+		const res = await fetch(
+			'https://script.google.com/macros/s/AKfycbwmG-VtaC9ZThK-RIr0U8y35_CQyNKAP8RHkY5tKACo3xZjuRb0hPvx43Hg0WpABY-n8g/exec',
+			{
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+				},
+				body: formData,
+			}
+		);
+
+		const data = await res.json();
+		// console.log('✅ 登録結果:', data);
+
+		if (data.status === 'success') {
+			eventId = data.eventId;
+		} else {
+			throw new Error('Googleカレンダー登録失敗');
+		}
+	} catch (err) {
+		// console.error('❌ Googleカレンダー登録エラー:', err);
+		alert('Googleカレンダーへの登録に失敗しました');
+		// エラー発生時はボタン復元
+		reserveBtn.disabled = false;
+		reserveBtn.innerText = originalText;
+		console.error(err.message); // optional
+		return;
+	}
+	// 登録時間をFirestoreに保存
+	const createdAt = new Date();
+
+	// 日本時間 (UTC+9) に変換
+	const jstDate = new Date(createdAt.getTime() + 9 * 60 * 60 * 1000);
+
+	// ISO形式にして "Z"（UTC）を削除し、代わりに "+09:00" を付ける
+	const jstISOString = jstDate.toISOString().replace('Z', '+09:00');
+
+	await db.collection('reservations').add({
+		uid,
+		username,
+		type: selectedType,
+		room,
+		date,
+		start,
+		end,
+		memo,
+		eventId, // カレンダー登録成功時に取得したIDを保存
+		jstISOString,
+	});
+
+	alert('予約が完了しました！');
+	renderRoomWiseList(date);
+}

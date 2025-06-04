@@ -15,7 +15,7 @@
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
 		<!-- Flatpickr JS -->
 		<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
 	</head>
 	<body class="bg-gray-100 p-8">
 		<!-- 🔐 未ログイン時のフォーム -->
@@ -52,26 +52,8 @@
 					<div class="bg-white p-6 rounded shadow" style="height: fit-content">
 						<div>
 							<h2 class="text-xl font-bold mb-4">会議室予約</h2>
-							<!-- ▼ 種別選択 -->
-							<h3 class="text-m font-bold mb-4">内容</h3>
-							<div id="tabs" class="flex mb-4 space-x-2">
-								<button
-									onclick="selectType('社内')"
-									id="tab-社内"
-									class="px-4 py-2 border rounded bg-blue-100"
-								>
-									社内打合せ
-								</button>
-								<button onclick="selectType('来客')" id="tab-来客" class="px-4 py-2 border rounded">
-									来客
-								</button>
-								<button onclick="selectType('ZOOM')" id="tab-ZOOM" class="px-4 py-2 border rounded">
-									ZOOM
-								</button>
-							</div>
-
 							<!-- ▼ 会議室選択（タブ式） -->
-							<h3 class="text-m font-bold mb-4">会議室</h3>
+							<h3 class="text-m font-bold mb-4">部屋の選択</h3>
 							<div id="roomTabs" class="flex mb-4 space-x-2">
 								<button
 									onclick="selectRoom('room1')"
@@ -95,13 +77,32 @@
 									商談室
 								</button>
 							</div>
+							<!-- ▼ 種別選択 -->
+							<h3 class="text-m font-bold mb-4">内容</h3>
+							<div id="typeSection">
+								<div id="tabs" class="flex mb-4 space-x-2">
+									<button
+										onclick="selectType('社内')"
+										id="tab-社内"
+										class="px-4 py-2 border rounded bg-blue-100"
+									>
+										社内打合せ
+									</button>
+									<button onclick="selectType('来客')" id="tab-来客" class="px-4 py-2 border rounded">
+										来客
+									</button>
+									<button onclick="selectType('ZOOM')" id="tab-ZOOM" class="px-4 py-2 border rounded">
+										ZOOM
+									</button>
+								</div>
+							</div>
 
 							<input type="hidden" id="room" value="room1" />
 
 							<!-- 🔽 セレクトは削除（or hidden化） -->
 							<input type="hidden" id="room" value="room1" />
-              
-              <label class="block mb-1">予約月日</label>
+
+							<label class="block mb-1">予約月日</label>
 							<input type="text" id="list-date" class="border rounded px-2 py-1 mb-4 shadow-sm" />
 
 							<label class="block mb-1">開始時間</label>

@@ -16,6 +16,15 @@
 		<!-- Flatpickr JS -->
 		<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 		<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+
+		<!-- ion.rangeSlider CSS -->
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ion-rangeslider@2.3.1/css/ion.rangeSlider.min.css" />
+		<!-- jQuery（必要） -->
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<!-- ion.rangeSlider JS -->
+		<script src="https://cdn.jsdelivr.net/npm/ion-rangeslider@2.3.1/js/ion.rangeSlider.min.js"></script>
+		
+		<link rel="stylesheet" href="/style.css" />
 	</head>
 	<body class="bg-gray-100 p-8">
 		<!-- 🔐 未ログイン時のフォーム -->
@@ -101,16 +110,20 @@
 
 							<!-- 🔽 セレクトは削除（or hidden化） -->
 							<input type="hidden" id="room" value="room1" />
-
-							<label class="block mb-1">予約月日</label>
+							
+							<!-- ▼ 予約月日 -->
+							<label class="block text-m font-bold mb-4">予約月日</label>
 							<input type="text" id="list-date" class="border rounded px-2 py-1 mb-4 shadow-sm" />
 
-							<label class="block mb-1">開始時間</label>
-							<select id="start_time" class="w-full border px-3 py-2 mb-4"></select>
+							<!-- ▼ 時間帯選択 -->
+							<label class="block text-m font-bold mb-6">時間帯を選択</label>
+							<input type="text" id="time-slider" name="time-range" />
 
-							<label class="block mb-1">終了時間</label>
-							<select id="end_time" class="w-full border px-3 py-2 mb-4"></select>
-							<label class="block mb-2">メモ（任意）</label>
+							<!-- start_time, end_time を格納するhidden要素 -->
+							<input type="hidden" id="start_time" />
+							<input type="hidden" id="end_time" />
+
+							<label class="block text-m font-bold mt-6 mb-2">メモ（任意）</label>
 							<textarea
 								id="memo"
 								class="w-full border px-3 py-2 mb-4"
@@ -210,6 +223,7 @@
 		<script src="js/form.js"></script>
 		<script src="js/list.js"></script>
 		<script src="js/calendar.js"></script>
+		<script src="js/time.js"></script>
 		<script src="js/main.js"></script>
 	</body>
 </html>

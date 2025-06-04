@@ -12,27 +12,26 @@ function selectRoom(room) {
 	document.getElementById('room').value = room;
 
 	// 会議室ボタンの選択表示更新
-  ['room1', 'room2', 'room3'].forEach((r) => {
-    const btn = document.getElementById(`room-${r}`);
-    if (btn) {
-      btn.classList.toggle('bg-blue-100', r === room);
-      btn.classList.toggle('font-bold', r === room);
-    }
-  });
+	['room1', 'room2', 'room3'].forEach((r) => {
+		const btn = document.getElementById(`room-${r}`);
+		if (btn) {
+			btn.classList.toggle('bg-blue-100', r === room);
+			btn.classList.toggle('font-bold', r === room);
+		}
+	});
 
-  if (room === 'room2' || room === 'room3') {
-    // 🔽 ZOOM選択だけ表示
-    selectType('ZOOM');
-    document.getElementById('tab-社内').style.display = 'none';
-    document.getElementById('tab-来客').style.display = 'none';
-    document.getElementById('tab-ZOOM').style.display = 'inline-block';
-  } else {
-    // 🔽 全部表示
-    document.getElementById('tab-社内').style.display = 'inline-block';
-    document.getElementById('tab-来客').style.display = 'inline-block';
-    document.getElementById('tab-ZOOM').style.display = 'inline-block';
-  }
-
+	if (room === 'room2' || room === 'room3') {
+		// 🔽 ZOOM選択だけ表示
+		selectType('ZOOM');
+		document.getElementById('tab-社内').style.display = 'none';
+		document.getElementById('tab-来客').style.display = 'none';
+		document.getElementById('tab-ZOOM').style.display = 'inline-block';
+	} else {
+		// 🔽 全部表示
+		document.getElementById('tab-社内').style.display = 'inline-block';
+		document.getElementById('tab-来客').style.display = 'inline-block';
+		document.getElementById('tab-ZOOM').style.display = 'inline-block';
+	}
 
 	const roomColorMap = {
 		room1: ['bg-blue-100', 'text-blue-800'],
@@ -56,6 +55,7 @@ function selectRoom(room) {
 	const selectedBtn = document.getElementById(`room-${room}`);
 	selectedBtn.classList.add(...roomColorMap[room], 'font-bold');
 }
+
 
 function generateTimeOptions() {
 	const startSelect = document.getElementById('start_time');

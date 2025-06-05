@@ -23,7 +23,7 @@
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 		<!-- ion.rangeSlider JS -->
 		<script src="https://cdn.jsdelivr.net/npm/ion-rangeslider@2.3.1/js/ion.rangeSlider.min.js"></script>
-		
+
 		<link rel="stylesheet" href="/style.css" />
 	</head>
 	<body class="bg-gray-100 p-8">
@@ -110,7 +110,7 @@
 
 							<!-- 🔽 セレクトは削除（or hidden化） -->
 							<input type="hidden" id="room" value="room1" />
-							
+
 							<!-- ▼ 予約月日 -->
 							<label class="block text-m font-bold mb-4">予約月日</label>
 							<input type="text" id="list-date" class="border rounded px-2 py-1 mb-4 shadow-sm" />
@@ -137,6 +137,15 @@
 							>
 								予約する
 							</button>
+						</div>
+						<button
+							id="openRepeatModal"
+							class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded"
+						>
+							定例MTG予約
+						</button>
+						<div id="repeat-list" class="space-y-2 mt-4">
+							<!-- JSで追加 -->
 						</div>
 					</div>
 				</div>
@@ -175,7 +184,7 @@
 		<footer class="flex flex-row gap-4 justify-between max-w-6xl mx-auto mt-8 p-4 >">
 			<div>
 				<h3>アップデート内容</h3>
-				<p>6/4</p>
+				<p>6/6</p>
 				<ul>
 					<li>セキュリティ強化</li>
 					<li>二重送信簡易対策</li>
@@ -203,7 +212,7 @@
 				</ol>
 				<strong class="text-red-600">予約出来なかった時は岡山まで報告ください！！</strong>
 			</div>
-			<div>
+			<!-- <div>
 				<h3 class="text-m font-bold mb-4">Googleカレンダー設定</h3>
 				<ol class="list-decimal ml-4">
 					<li>Googleカレンダーを開く</li>
@@ -223,15 +232,70 @@
 						カレンダーの”：”をクリックしてカレンダー名・カレンダーの色を変更することで、他のカレンダーと区別できます
 					</li>
 				</ol>
-			</div>
+			</div> -->
 		</footer>
+		<!-- 🔽 定例MTG登録モーダル（HTML例） // ※ ボタン等に追加して表示制御する想定 -->
+		<div id="repeatModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+			<div class="bg-white p-6 rounded shadow w-full max-w-md">
+				<h2 class="text-xl font-bold mb-4">定例予約の作成</h2>
+
+				<label class="block mb-1">タイトル</label>
+				<input type="text" id="repeat-title" class="w-full border px-3 py-2 mb-4" />
+
+				<label class="block mb-1">曜日</label>
+				<select id="repeat-weekday" class="w-full border px-3 py-2 mb-4">
+					<option value="1">月曜</option>
+					<option value="2">火曜</option>
+					<option value="3">水曜</option>
+					<option value="4">木曜</option>
+					<option value="5">金曜</option>
+					<option value="6">土曜</option>
+					<option value="0">日曜</option>
+				</select>
+
+				<label class="block mb-1">時間帯</label>
+				<input type="time" id="repeat-start" class="border px-3 py-2 mb-2" /> ～
+				<input type="time" id="repeat-end" class="border px-3 py-2 mb-4" />
+
+				<label class="block mb-1">期間（月数）</label>
+				<select id="repeat-duration" class="w-full border px-3 py-2 mb-4">
+					<option value="1">1ヶ月</option>
+					<option value="3">3ヶ月</option>
+					<option value="6">6ヶ月</option>
+					<option value="12">12ヶ月</option>
+				</select>
+
+				<label class="block mb-1">会議室</label>
+				<select id="repeat-room" class="w-full border px-3 py-2 mb-4">
+					<option value="room1">会議室</option>
+					<option value="room2">個室</option>
+					<option value="room3">商談室</option>
+				</select>
+
+				<label class="block mb-1">メモ</label>
+				<textarea id="repeat-memo" class="w-full border px-3 py-2 mb-4" rows="2"></textarea>
+
+				<div class="flex justify-end gap-2">
+					<button onclick="closeRepeatModal()" class="bg-gray-300 px-4 py-2 rounded">キャンセル</button>
+					<button onclick="registerRepeatReservation()" class="bg-blue-500 text-white px-4 py-2 rounded">
+						登録
+					</button>
+				</div>
+			</div>
+		</div>
 		<script src="js/init.js"></script>
 		<script src="js/utils.js"></script>
 		<script src="js/auth.js"></script>
 		<script src="js/form.js"></script>
 		<script src="js/list.js"></script>
+		<script src="js/modalform.js"></script>
 		<script src="js/calendar.js"></script>
 		<script src="js/time.js"></script>
 		<script src="js/main.js"></script>
+		<script>
+			function closeRepeatModal() {
+				document.getElementById('repeatModal').classList.add('hidden');
+			}
+		</script>
 	</body>
 </html>

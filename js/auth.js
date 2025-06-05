@@ -66,6 +66,7 @@ auth.onAuthStateChanged((user) => {
 		const today = now.toISOString().split('T')[0];
 		document.getElementById('list-date').value = today;
 		renderRoomWiseList(today);
+		loadReservedRanges(document.getElementById('room').value, today);
 		// updateAllViews();
 	} else {
 		document.getElementById('authSection').classList.remove('hidden');

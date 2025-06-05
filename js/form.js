@@ -18,6 +18,9 @@ function selectRoom(room) {
 			btn.classList.toggle('bg-blue-100', r === room);
 			btn.classList.toggle('font-bold', r === room);
 		}
+		// 現在の日付を取得
+		const date = document.getElementById('list-date').value;
+		loadReservedRanges(room, date); // 予約済み時間帯を更新
 	});
 
 	if (room === 'room2' || room === 'room3') {
@@ -55,7 +58,6 @@ function selectRoom(room) {
 	const selectedBtn = document.getElementById(`room-${room}`);
 	selectedBtn.classList.add(...roomColorMap[room], 'font-bold');
 }
-
 
 function generateTimeOptions() {
 	const startSelect = document.getElementById('start_time');

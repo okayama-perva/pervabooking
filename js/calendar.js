@@ -7,6 +7,7 @@
 	  locale: "ja", // ← 念のため指定
       onChange: function (selectedDates, dateStr) {
         renderRoomWiseList(dateStr);// 👈 日付変更時に予約リストを更新
+        loadReservedRanges(document.getElementById('room').value, dateStr);
 		document.getElementById('date').value = dateStr // 👈 日付入力欄も更新
       },
     });
@@ -21,6 +22,7 @@
 	  locale: "ja", // ← 念のため指定
       onChange: function (selectedDates, dateStr) {
         renderRoomWiseList(dateStr);// 👈 日付変更時に予約リストを更新
+        loadReservedRanges(document.getElementById('room').value, dateStr); // ← ここ追加
 		document.getElementById('list-date').value = dateStr // 👈 日付入力欄も更新
       },
     });

@@ -6,19 +6,54 @@ document.getElementById('openRepeatModal').addEventListener('click', () => {
 document.getElementById('closeRepeatModal').addEventListener('click', () => {
 	document.getElementById('repeatModal').classList.add('hidden');
 });
+// 曜日チェックボックスの整理
+function getSelectedWeekdays() {
+	const checkboxes = document.querySelectorAll('input[name="repeat-weekday"]:checked');
+	return Array.from(checkboxes).map((cb) => parseInt(cb.value));
+}
+// 日付選択
+document.addEventListener('DOMContentLoaded', () => {
+	const startSelect = document.getElementById('repeat-start');
+	const endSelect = document.getElementById('repeat-end');
+
+	for (let h = 7; h <= 20; h++) {
+		for (let m of [0, 30]) {
+			const hh = String(h).padStart(2, '0');
+			const mm = m === 0 ? '00' : '30';
+			const timeStr = `${hh}:${mm}`;
+			const option1 = new Option(timeStr, timeStr);
+			const option2 = new Option(timeStr, timeStr);
+			startSelect.appendChild(option1);
+			endSelect.appendChild(option2);
+		}
+	}
+
+	// 初期値
+	startSelect.value = '10:00';
+	endSelect.value = '11:00';
+});
 
 // 定例予約の登録ボタンにイベントリスナーを追加
 async function registerRepeatReservation() {
 	const title = document.getElementById('repeat-title')?.value.trim();
 	const room = document.getElementById('repeat-room')?.value;
-	const weekday = document.getElementById('repeat-weekday')?.value;
-	const timeFrom = parseFloat(document.getElementById('repeat-from')?.value);
-	const timeTo = parseFloat(document.getElementById('repeat-to')?.value);
+	const weekdays = getSelectedWeekdays();
+	const timeFrom = document.getElementById('repeat-start')?.value;
+	const timeTo = document.getElementById('repeat-end')?.value;
 	const months = parseInt(document.getElementById('repeat-months')?.value);
 	const memo = document.getElementById('repeat-memo')?.value.trim();
 	const excludeHoliday = document.getElementById('repeat-exclude-holiday')?.checked;
-
-	if (!title || !room || !weekday || !timeFrom || !timeTo || !months) {
+	console.log('定例予約登録:', {
+		title,
+		room,
+		weekdays,
+		timeFrom,
+		timeTo,
+		months,
+		memo,
+		excludeHoliday,
+	});
+	if (!title || !room || weekdays.length === 0 || !timeFrom || !timeTo || !months) {
 		alert('すべての項目を入力してください');
 		return;
 	}
@@ -35,11 +70,10 @@ async function registerRepeatReservation() {
 	// グループIDの生成（タイムスタンプ＋ランダム）
 	const repeatGroupId = `grp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
-	// 以降の処理へ進む
-	await saveRepeatGroupAndReservations({
+	console.log('定例予約登録:', {
 		title,
 		room,
-		weekday,
+		weekdays,
 		timeFrom,
 		timeTo,
 		months,
@@ -49,13 +83,28 @@ async function registerRepeatReservation() {
 		username,
 		repeatGroupId,
 	});
+	return; // デバッグ用にログ出力
+	// 以降の処理へ進む
+	// await saveRepeatGroupAndReservations({
+	// 	title,
+	// 	room,
+	// 	weekday,
+	// 	timeFrom,
+	// 	timeTo,
+	// 	months,
+	// 	memo,
+	// 	excludeHoliday,
+	// 	uid,
+	// 	username,
+	// 	repeatGroupId,
+	// });
 }
 
 // 定例予約の保存と予約登録処理
 async function saveRepeatGroupAndReservations({
 	title,
 	room,
-	weekday,
+	weekdays,
 	timeFrom,
 	timeTo,
 	months,
@@ -65,11 +114,6 @@ async function saveRepeatGroupAndReservations({
 	username,
 	repeatGroupId,
 }) {
-	const startHour = Math.floor(timeFrom);
-	const startMin = timeFrom % 1 === 0 ? '00' : '30';
-	const endHour = Math.floor(timeTo);
-	const endMin = timeTo % 1 === 0 ? '00' : '30';
-
 	const now = new Date();
 	const reservations = [];
 
@@ -79,14 +123,14 @@ async function saveRepeatGroupAndReservations({
 
 		for (let d = 1; d <= last; d++) {
 			const date = new Date(base.getFullYear(), base.getMonth(), d);
-			if (date.getDay() != weekday) continue;
+			if (!weekdays.includes(date.getDay())) continue;
 
 			// 祝日除外（仮に対応していなければスキップ処理はあとで入れる）
 			if (excludeHoliday && isHoliday(date)) continue;
 
 			const ymd = date.toISOString().split('T')[0];
-			const start = `${ymd} ${String(startHour).padStart(2, '0')}:${startMin}`;
-			const end = `${ymd} ${String(endHour).padStart(2, '0')}:${endMin}`;
+			const start = `${ymd} ${timeFrom}`;
+			const end = `${ymd} ${timeTo}`;
 
 			// 予約の重複チェック
 			const snapshot = await db
@@ -110,7 +154,7 @@ async function saveRepeatGroupAndReservations({
 	await db.collection('repeatGroups').doc(repeatGroupId).set({
 		title,
 		room,
-		weekday,
+		weekdays,
 		timeFrom,
 		timeTo,
 		months,
@@ -191,7 +235,6 @@ async function registerGoogleCalendarEvent({ room, username, type, start, end, d
 	}
 }
 
-
 // リストの表示
 async function renderRepeatGroups() {
 	const list = document.getElementById('repeat-list');
@@ -233,11 +276,14 @@ async function deleteRepeatGroup(groupId) {
 			const form = new URLSearchParams();
 			form.append('eventId', data.eventId);
 			form.append('action', 'delete');
-			await fetch('https://script.google.com/macros/s/AKfycbwEn021D7zcfUqcYA5HREjqYZiRLQ-uEx8yxHgBGwdZCBhsRP748DK3qZFCtz6sAf3g3Q/exec', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body: form,
-			});
+			await fetch(
+				'https://script.google.com/macros/s/AKfycbwEn021D7zcfUqcYA5HREjqYZiRLQ-uEx8yxHgBGwdZCBhsRP748DK3qZFCtz6sAf3g3Q/exec',
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: form,
+				}
+			);
 		}
 		// Firestoreから予約削除
 		await doc.ref.delete();

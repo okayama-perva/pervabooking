@@ -264,4 +264,5 @@ async function reserve() {
 	reserveBtn.disabled = false;
 	reserveBtn.innerText = originalText;
 	renderRoomWiseList(date);
+	loadReservedRanges(room, date); // 予約済み時間帯を更新
 }

@@ -138,14 +138,17 @@
 								予約する
 							</button>
 						</div>
-						<button
-							id="openRepeatModal"
-							class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded"
-						>
-							定例MTG予約
-						</button>
-						<div id="repeat-list" class="space-y-2 mt-4">
-							<!-- JSで追加 -->
+						<div class="mt-6">
+							<h2 class="text-lg font-bold mb-4">定例MTG予約</h2>
+							<button
+								id="openRepeatModal"
+								class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded"
+							>
+								定例MTG予約
+							</button>
+							<div id="repeat-list" class="space-y-2 mt-4">
+								<!-- JSで追加 -->
+							</div>
 						</div>
 					</div>
 				</div>
@@ -242,26 +245,41 @@
 				<label class="block mb-1">タイトル</label>
 				<input type="text" id="repeat-title" class="w-full border px-3 py-2 mb-4" />
 
-				<label class="block mb-1">曜日</label>
-				<select id="repeat-weekday" class="w-full border px-3 py-2 mb-4">
-					<option value="1">月曜</option>
-					<option value="2">火曜</option>
-					<option value="3">水曜</option>
-					<option value="4">木曜</option>
-					<option value="5">金曜</option>
-					<option value="6">土曜</option>
-					<option value="0">日曜</option>
-				</select>
+				<label class="block mb-1">曜日（複数選択可）</label>
+				<div id="weekday-checkboxes" class="flex flex-wrap gap-3 mb-4">
+					<label><input type="checkbox" name="repeat-weekday" value="1" /> 月</label>
+					<label><input type="checkbox" name="repeat-weekday" value="2" /> 火</label>
+					<label><input type="checkbox" name="repeat-weekday" value="3" /> 水</label>
+					<label><input type="checkbox" name="repeat-weekday" value="4" /> 木</label>
+					<label><input type="checkbox" name="repeat-weekday" value="5" /> 金</label>
+					<label><input type="checkbox" name="repeat-weekday" value="6" /> 土</label>
+					<label><input type="checkbox" name="repeat-weekday" value="0" /> 日</label>
+				</div>
 
 				<label class="block mb-1">時間帯</label>
-				<input type="time" id="repeat-start" class="border px-3 py-2 mb-2" /> ～
-				<input type="time" id="repeat-end" class="border px-3 py-2 mb-4" />
+				<div class="flex items-center gap-2 mb-4">
+					<select id="repeat-start" class="border px-3 py-2 w-full">
+						<!-- JSで追加 -->
+					</select>
+					<span>～</span>
+					<select id="repeat-end" class="border px-3 py-2 w-full">
+						<!-- JSで追加 -->
+					</select>
+				</div>
 
 				<label class="block mb-1">期間（月数）</label>
-				<select id="repeat-duration" class="w-full border px-3 py-2 mb-4">
+				<select id="repeat-months" class="w-full border px-3 py-2 mb-4">
 					<option value="1">1ヶ月</option>
+					<option value="2">2ヶ月</option>
 					<option value="3">3ヶ月</option>
+					<option value="4">4ヶ月</option>
+					<option value="5">5ヶ月</option>
 					<option value="6">6ヶ月</option>
+					<option value="7">7ヶ月</option>
+					<option value="8">8ヶ月</option>
+					<option value="9">9ヶ月</option>
+					<option value="10">10ヶ月</option>
+					<option value="11">11ヶ月</option>
 					<option value="12">12ヶ月</option>
 				</select>
 
@@ -276,7 +294,7 @@
 				<textarea id="repeat-memo" class="w-full border px-3 py-2 mb-4" rows="2"></textarea>
 
 				<div class="flex justify-end gap-2">
-					<button onclick="closeRepeatModal()" class="bg-gray-300 px-4 py-2 rounded">キャンセル</button>
+					<button id="closeRepeatModal" class="bg-gray-300 px-4 py-2 rounded">キャンセル</button>
 					<button onclick="registerRepeatReservation()" class="bg-blue-500 text-white px-4 py-2 rounded">
 						登録
 					</button>
@@ -292,10 +310,5 @@
 		<script src="js/calendar.js"></script>
 		<script src="js/time.js"></script>
 		<script src="js/main.js"></script>
-		<script>
-			function closeRepeatModal() {
-				document.getElementById('repeatModal').classList.add('hidden');
-			}
-		</script>
 	</body>
 </html>

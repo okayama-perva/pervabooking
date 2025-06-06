@@ -42,13 +42,13 @@ async function registerRepeatReservation() {
 	const timeTo = document.getElementById('repeat-end')?.value;
 	const months = parseInt(document.getElementById('repeat-months')?.value);
 	const memo = document.getElementById('repeat-memo')?.value.trim();
-	const excludeHoliday = document.getElementById('repeat-exclude-holiday')?.checked;
-    // 入力チェック
+	// const excludeHoliday = document.getElementById('repeat-exclude-holiday')?.checked;
+	// 入力チェック
 	if (!title || !room || weekdays.length === 0 || !timeFrom || !timeTo || !months) {
 		alert('すべての項目を入力してください');
 		return;
 	}
-    // 時間のバリデーション
+	// 時間のバリデーション
 	if (timeFrom >= timeTo) {
 		alert('開始時間は終了時間より前にしてください');
 		return;
@@ -59,10 +59,12 @@ async function registerRepeatReservation() {
 	const userDoc = await db.collection('users').doc(uid).get();
 	const username = userDoc.exists ? userDoc.data().username : '未登録';
 
+	// excludeHoliday = excludeHoliday || false; // チェックボックスの値を取得
+
 	// グループIDの生成（タイムスタンプ＋ランダム）
 	const repeatGroupId = `grp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
-	以降の処理へ進む
+	//以降の処理へ進む
 	await saveRepeatGroupAndReservations({
 		title,
 		room,
@@ -71,7 +73,7 @@ async function registerRepeatReservation() {
 		timeTo,
 		months,
 		memo,
-		excludeHoliday,
+		// excludeHoliday,
 		uid,
 		username,
 		repeatGroupId,
@@ -87,30 +89,32 @@ async function saveRepeatGroupAndReservations({
 	timeTo,
 	months,
 	memo,
-	excludeHoliday,
 	uid,
 	username,
 	repeatGroupId,
 }) {
 	const now = new Date();
+	const createdAt = now.toISOString().replace('Z', '+09:00');
 	const reservations = [];
 
 	for (let i = 0; i < months; i++) {
-		const base = new Date(now.getFullYear(), now.getMonth() + i, 1);
-		const last = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate();
+		const targetDate = new Date(now);
+		targetDate.setMonth(now.getMonth() + i);
 
-		for (let d = 1; d <= last; d++) {
-			const date = new Date(base.getFullYear(), base.getMonth(), d);
+		const year = targetDate.getFullYear();
+		const month = targetDate.getMonth();
+		const lastDay = new Date(year, month + 1, 0).getDate();
+
+		for (let d = 1; d <= lastDay; d++) {
+			const date = new Date(year, month, d);
+			if (date < now) continue;
 			if (!weekdays.includes(date.getDay())) continue;
-
-			// 祝日除外（仮に対応していなければスキップ処理はあとで入れる）
-			if (excludeHoliday && isHoliday(date)) continue;
 
 			const ymd = date.toISOString().split('T')[0];
 			const start = `${ymd} ${timeFrom}`;
 			const end = `${ymd} ${timeTo}`;
 
-			// 予約の重複チェック
+			// ▼ 重複チェック
 			const snapshot = await db
 				.collection('reservations')
 				.where('room', '==', room)
@@ -121,15 +125,14 @@ async function saveRepeatGroupAndReservations({
 				const data = doc.data();
 				return !(end <= data.start || start >= data.end);
 			});
-
-			if (overlap) continue; // 🔁 重複あればスキップ
+			if (overlap) continue;
 
 			reservations.push({ ymd, start, end });
 		}
 	}
 
-	// グループ情報を保存
-	await db.collection('repeatGroups').doc(repeatGroupId).set({
+	// 🔍 ログで確認
+	console.log('📝 作成予定の定例予約:', {
 		title,
 		room,
 		weekdays,
@@ -137,42 +140,24 @@ async function saveRepeatGroupAndReservations({
 		timeTo,
 		months,
 		memo,
-		createdAt: new Date().toISOString(),
+		createdAt,
 		uid,
 		username,
-		excludeHoliday,
+		repeatGroupId,
 		count: reservations.length,
 	});
+	console.log('📅 作成予定の予約一覧:', reservations);
 
-	// 予約情報を保存（Firestore & Googleカレンダー）
+	// 🔕 以下は本番時のみ有効に
+	// await db.collection('repeatGroups').doc(repeatGroupId).set({...});
 	// for (const r of reservations) {
-	// 	const eventId = await registerGoogleCalendarEvent({
-	// 		room,
-	// 		username,
-	// 		type: title,
-	// 		start: r.start,
-	// 		end: r.end,
-	// 		date: r.ymd,
-	// 		memo,
-	// 	});
-
-	// 	await db.collection('reservations').add({
-	// 		uid,
-	// 		username,
-	// 		type: title,
-	// 		room,
-	// 		date: r.ymd,
-	// 		start: r.start,
-	// 		end: r.end,
-	// 		memo,
-	// 		eventId,
-	// 		repeatGroupId,
-	// 		createdAt: new Date().toISOString(),
-	// 	});
+	//     const eventId = await registerGoogleCalendarEvent({...});
+	//     await db.collection('reservations').add({...});
 	// }
 
-	alert('定例予約の登録が完了しました！');
+	alert('※ 登録は行われていません（テストモード）');
 }
+
 // Googleカレンダーに登録する関数
 async function registerGoogleCalendarEvent({ room, username, type, start, end, date, memo }) {
 	const roomNames = {

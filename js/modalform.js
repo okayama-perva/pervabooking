@@ -43,20 +43,12 @@ async function registerRepeatReservation() {
 	const months = parseInt(document.getElementById('repeat-months')?.value);
 	const memo = document.getElementById('repeat-memo')?.value.trim();
 	const excludeHoliday = document.getElementById('repeat-exclude-holiday')?.checked;
-	console.log('定例予約登録:', {
-		title,
-		room,
-		weekdays,
-		timeFrom,
-		timeTo,
-		months,
-		memo,
-		excludeHoliday,
-	});
+    // 入力チェック
 	if (!title || !room || weekdays.length === 0 || !timeFrom || !timeTo || !months) {
 		alert('すべての項目を入力してください');
 		return;
 	}
+    // 時間のバリデーション
 	if (timeFrom >= timeTo) {
 		alert('開始時間は終了時間より前にしてください');
 		return;
@@ -70,7 +62,8 @@ async function registerRepeatReservation() {
 	// グループIDの生成（タイムスタンプ＋ランダム）
 	const repeatGroupId = `grp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
-	console.log('定例予約登録:', {
+	以降の処理へ進む
+	await saveRepeatGroupAndReservations({
 		title,
 		room,
 		weekdays,
@@ -83,21 +76,6 @@ async function registerRepeatReservation() {
 		username,
 		repeatGroupId,
 	});
-	return; // デバッグ用にログ出力
-	// 以降の処理へ進む
-	// await saveRepeatGroupAndReservations({
-	// 	title,
-	// 	room,
-	// 	weekday,
-	// 	timeFrom,
-	// 	timeTo,
-	// 	months,
-	// 	memo,
-	// 	excludeHoliday,
-	// 	uid,
-	// 	username,
-	// 	repeatGroupId,
-	// });
 }
 
 // 定例予約の保存と予約登録処理
@@ -167,31 +145,31 @@ async function saveRepeatGroupAndReservations({
 	});
 
 	// 予約情報を保存（Firestore & Googleカレンダー）
-	for (const r of reservations) {
-		const eventId = await registerGoogleCalendarEvent({
-			room,
-			username,
-			type: title,
-			start: r.start,
-			end: r.end,
-			date: r.ymd,
-			memo,
-		});
+	// for (const r of reservations) {
+	// 	const eventId = await registerGoogleCalendarEvent({
+	// 		room,
+	// 		username,
+	// 		type: title,
+	// 		start: r.start,
+	// 		end: r.end,
+	// 		date: r.ymd,
+	// 		memo,
+	// 	});
 
-		await db.collection('reservations').add({
-			uid,
-			username,
-			type: title,
-			room,
-			date: r.ymd,
-			start: r.start,
-			end: r.end,
-			memo,
-			eventId,
-			repeatGroupId,
-			createdAt: new Date().toISOString(),
-		});
-	}
+	// 	await db.collection('reservations').add({
+	// 		uid,
+	// 		username,
+	// 		type: title,
+	// 		room,
+	// 		date: r.ymd,
+	// 		start: r.start,
+	// 		end: r.end,
+	// 		memo,
+	// 		eventId,
+	// 		repeatGroupId,
+	// 		createdAt: new Date().toISOString(),
+	// 	});
+	// }
 
 	alert('定例予約の登録が完了しました！');
 }

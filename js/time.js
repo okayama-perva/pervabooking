@@ -61,8 +61,8 @@ $(document).ready(function () {
 		from: 10,
 		to: 11,
 		grid: true,
-        grid_num: 9,
-        grid_snap: true,
+        grid_num: 13,
+        // grid_snap: true,
 		prettify: function (num) {
 			const hour = Math.floor(num);
 			const minute = num % 1 === 0 ? '00' : '30';

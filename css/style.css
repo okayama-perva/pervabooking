@@ -1,0 +1,46 @@
+/* スライダーの全体サイズを調整 */
+.irs--flat .irs-bar,
+.irs--flat .irs-line {
+  height: 16px !important; /* 元は 6px、倍以上に拡大 */
+}
+
+/* スライダーのつまみ（ハンドル）を大きく */
+.irs--flat .irs-handle {
+  width: 15px !important;
+  height: 24px !important;
+  top: 15px !important; /* 位置を微調整 */
+  background-color: #b0b0b0 !important; /* 濃い青（Tailwind blue-600） */
+  border-radius: 50% !important;
+  border: 1px solid white !important;
+  cursor: grab !important;
+}
+
+/* 数字ラベルの文字サイズアップ */
+.irs--flat .irs-grid-text {
+  font-size: 11px !important;
+  transform: translateY(11px) !important; 
+}
+/* スライダーの背景色を変更 */
+.irs--flat .irs-from,
+.irs--flat .irs-to {
+  font-size: 12px !important;
+  transform: translateY(-10px) !important;
+}
+.irs--flat .irs-single {
+  font-size: 12px !important;
+  transform: translateY(-10px) !important;
+}
+.irs--flat .irs-handle > i:first-child {
+  background-color: #b0b0b0 !important;
+}
+.irs--flat .irs-handle:hover > i:first-child {
+  background-color: #b0b0b0 !important;
+}
+.reserved-range {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(255, 0, 0, 0.3) !important; /* 薄い赤 */
+  z-index: 2 !important;
+  pointer-events: none !important; /* スライダー操作に干渉しない */
+}

@@ -44,7 +44,14 @@ function login() {
 	loginBtn.disabled = true;
 	const originalText = loginBtn.innerText;
 	loginBtn.innerText = 'ログイン中...';
-	auth.signInWithEmailAndPassword(email, password).catch((err) => {
+	auth.signInWithEmailAndPassword(email, password)
+	.then(() => {
+			// 🔐 成功時：1日セッション有効期限を保存
+			const expireAt = Date.now() +3 * 24 * 60 * 60 * 1000;
+			localStorage.setItem('authExpireAt', expireAt);
+			console.log('✅ expireAt saved:', new Date(expireAt).toLocaleString());
+		})
+	.catch((err) => {
 		alert('ログイン失敗：メールアドレス・パスワードを間違えていないか確認してください ');
 		// エラー時はボタンを戻す
 		loginBtn.disabled = false;
@@ -53,11 +60,22 @@ function login() {
 	});
 }
 
+
 function logout() {
 	auth.signOut();
+	localStorage.removeItem('authExpireAt');
 }
 
 auth.onAuthStateChanged((user) => {
+	// 🔍 セッション期限を確認
+	const expireAt = parseInt(localStorage.getItem('authExpireAt') || '0', 10);
+	if (user && expireAt && Date.now() > expireAt) {
+		auth.signOut().then(() => {
+			localStorage.removeItem('authExpireAt'); // クリーンアップ
+			alert('セッションの有効期限が切れました。再度ログインしてください。');
+		});
+		return; // 処理中断
+	}
 	if (user) {
 		document.getElementById('authSection').classList.add('hidden');
 		document.getElementById('appSection').classList.remove('hidden');

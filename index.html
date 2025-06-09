@@ -1,221 +1,285 @@
 <!DOCTYPE html>
 <html lang="ja">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>会議室予約</title>
-		<script src="https://cdn.tailwindcss.com"></script>
-		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-		<!-- ファビコン -->
-		<link rel="icon" href="./favicon.ico" type="image/x-icon" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>会議室予約</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <!-- ファビコン -->
+    <link rel="icon" href="./favicon.ico" type="image/x-icon" />
 
-		<!-- Flatpickr CSS -->
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
-		<!-- Flatpickr JS -->
-		<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-		<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+    <!-- Flatpickr CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
 
-		<!-- ion.rangeSlider CSS -->
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ion-rangeslider@2.3.1/css/ion.rangeSlider.min.css" />
-		<!-- jQuery（必要） -->
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-		<!-- ion.rangeSlider JS -->
-		<script src="https://cdn.jsdelivr.net/npm/ion-rangeslider@2.3.1/js/ion.rangeSlider.min.js"></script>
+    <!-- ion.rangeSlider CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/ion-rangeslider@2.3.1/css/ion.rangeSlider.min.css"
+    />
+    <!-- jQuery（必要） -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- ion.rangeSlider JS -->
+    <script src="https://cdn.jsdelivr.net/npm/ion-rangeslider@2.3.1/js/ion.rangeSlider.min.js"></script>
 
-		<link rel="stylesheet" href="/style.css" />
-	</head>
-	<body class="bg-gray-100 p-8">
-		<!-- 🔐 未ログイン時のフォーム -->
-		<div id="authSection" class="max-w-md mx-auto bg-white p-6 rounded shadow">
-			<h2 class="text-lg font-bold mb-4">ログイン / 登録</h2>
-			<input
-				type="text"
-				id="username"
-				placeholder="表示名（新規登録のみ）"
-				class="w-full border px-3 py-2 mb-2"
-			/>
-			<input type="email" id="email" placeholder="メールアドレス" class="w-full border px-3 py-2 mb-2" />
-			<input type="password" id="password" placeholder="パスワード" class="w-full border px-3 py-2 mb-4" />
-			<button id="registerBtn" onclick="register()" class="bg-gray-500 text-white px-4 py-2 rounded">
-				新規登録
-			</button>
-			<button id="loginBtn" onclick="login()" class="bg-green-500 text-white px-4 py-2 rounded mr-2">
-				ログイン
-			</button>
-		</div>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body class="bg-gray-100 p-8">
+    <!-- 🔐 未ログイン時のフォーム -->
+    <div id="authSection" class="max-w-md mx-auto bg-white p-6 rounded shadow">
+      <h2 class="text-lg font-bold mb-4">ログイン / 登録</h2>
+      <input
+        type="text"
+        id="username"
+        placeholder="表示名（新規登録のみ）"
+        class="w-full border px-3 py-2 mb-2"
+      />
+      <input
+        type="email"
+        id="email"
+        placeholder="メールアドレス"
+        class="w-full border px-3 py-2 mb-2"
+      />
+      <input
+        type="password"
+        id="password"
+        placeholder="パスワード"
+        class="w-full border px-3 py-2 mb-4"
+      />
+      <button
+        id="registerBtn"
+        onclick="register()"
+        class="bg-gray-500 text-white px-4 py-2 rounded"
+      >
+        新規登録
+      </button>
+      <button
+        id="loginBtn"
+        onclick="login()"
+        class="bg-green-500 text-white px-4 py-2 rounded mr-2"
+      >
+        ログイン
+      </button>
+    </div>
 
-		<!-- 🔐 ログイン後の画面全体 -->
-		<div id="appSection" class="hidden relative bg-gray-100">
-			<!-- ヘッダー -->
-			<div class="flex justify-between items-center mb-4 max-w-6xl mx-auto">
-				<h1 class="text-2xl font-bold">会議室予約システム</h1>
-				<button onclick="logout()" class="text-sm text-blue-600 underline">ログアウト</button>
-			</div>
+    <!-- 🔐 ログイン後の画面全体 -->
+    <div id="appSection" class="hidden relative bg-gray-100">
+      <!-- ヘッダー -->
+      <div class="flex justify-between items-center mb-4 max-w-6xl mx-auto">
+        <h1 class="text-2xl font-bold">会議室予約システム</h1>
+        <button onclick="logout()" class="text-sm text-blue-600 underline">
+          ログアウト
+        </button>
+      </div>
 
-			<!-- 2カラム表示（左：予約フォーム / 右：カレンダー） -->
-			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
-				<!-- 左：予約フォーム -->
-				<div class="flex flex-col flex-nowrap gap-6">
-					<div class="bg-white p-6 rounded shadow" style="height: fit-content">
-						<div>
-							<h2 class="text-xl font-bold mb-4">会議室予約</h2>
-							<!-- ▼ 会議室選択（タブ式） -->
-							<h3 class="text-m font-bold mb-4">部屋の選択</h3>
-							<div id="roomTabs" class="flex mb-4 space-x-2">
-								<button
-									onclick="selectRoom('room1')"
-									id="room-room1"
-									class="px-4 py-2 border rounded bg-blue-100 text-blue-800 font-bold"
-								>
-									会議室
-								</button>
-								<button
-									onclick="selectRoom('room2')"
-									id="room-room2"
-									class="px-4 py-2 border rounded text-green-800"
-								>
-									個室
-								</button>
-								<button
-									onclick="selectRoom('room3')"
-									id="room-room3"
-									class="px-4 py-2 border rounded text-purple-800"
-								>
-									商談室
-								</button>
-							</div>
-							<!-- ▼ 種別選択 -->
-							<h3 class="text-m font-bold mb-4">内容</h3>
-							<div id="typeSection">
-								<div id="tabs" class="flex mb-4 space-x-2">
-									<button
-										onclick="selectType('社内')"
-										id="tab-社内"
-										class="px-4 py-2 border rounded bg-blue-100"
-									>
-										社内打合せ
-									</button>
-									<button onclick="selectType('来客')" id="tab-来客" class="px-4 py-2 border rounded">
-										来客
-									</button>
-									<button onclick="selectType('ZOOM')" id="tab-ZOOM" class="px-4 py-2 border rounded">
-										ZOOM
-									</button>
-								</div>
-							</div>
+      <!-- 2カラム表示（左：予約フォーム / 右：カレンダー） -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+        <!-- 左：予約フォーム -->
+        <div class="flex flex-col flex-nowrap gap-6">
+          <div class="bg-white p-6 rounded shadow" style="height: fit-content">
+            <div>
+              <h2 class="text-xl font-bold mb-4">会議室予約</h2>
+              <!-- ▼ 会議室選択（タブ式） -->
+              <h3 class="text-m font-bold mb-4">部屋の選択</h3>
+              <div id="roomTabs" class="flex mb-4 space-x-2">
+                <button
+                  onclick="selectRoom('room1')"
+                  id="room-room1"
+                  class="px-4 py-2 border rounded bg-blue-100 text-blue-800 font-bold"
+                >
+                  会議室
+                </button>
+                <button
+                  onclick="selectRoom('room2')"
+                  id="room-room2"
+                  class="px-4 py-2 border rounded text-green-800"
+                >
+                  個室
+                </button>
+                <button
+                  onclick="selectRoom('room3')"
+                  id="room-room3"
+                  class="px-4 py-2 border rounded text-purple-800"
+                >
+                  商談室
+                </button>
+              </div>
+              <!-- ▼ 種別選択 -->
+              <h3 class="text-m font-bold mb-4">内容</h3>
+              <div id="typeSection">
+                <div id="tabs" class="flex mb-4 space-x-2">
+                  <button
+                    onclick="selectType('社内')"
+                    id="tab-社内"
+                    class="px-4 py-2 border rounded bg-blue-100"
+                  >
+                    社内打合せ
+                  </button>
+                  <button
+                    onclick="selectType('来客')"
+                    id="tab-来客"
+                    class="px-4 py-2 border rounded"
+                  >
+                    来客
+                  </button>
+                  <button
+                    onclick="selectType('ZOOM')"
+                    id="tab-ZOOM"
+                    class="px-4 py-2 border rounded"
+                  >
+                    ZOOM
+                  </button>
+                </div>
+              </div>
 
-							<input type="hidden" id="room" value="room1" />
+              <input type="hidden" id="room" value="room1" />
 
-							<!-- 🔽 セレクトは削除（or hidden化） -->
-							<input type="hidden" id="room" value="room1" />
+              <!-- 🔽 セレクトは削除（or hidden化） -->
+              <input type="hidden" id="room" value="room1" />
 
-							<!-- ▼ 予約月日 -->
-							<label class="block text-m font-bold mb-4">予約月日</label>
-							<input type="text" id="list-date" class="border rounded px-2 py-1 mb-4 shadow-sm" />
+              <!-- ▼ 予約月日 -->
+              <label class="block text-m font-bold mb-4">予約月日</label>
+              <input
+                type="text"
+                id="list-date"
+                class="border rounded px-2 py-1 mb-4 shadow-sm"
+              />
 
-							<!-- ▼ 時間帯選択 -->
-							<label class="block text-m font-bold mb-6">時間帯を選択</label>
-							<input type="text" id="time-slider" name="time-range" />
+              <!-- ▼ 時間帯選択 -->
+              <label class="block text-m font-bold mb-6">時間帯を選択</label>
+              <input type="text" id="time-slider" name="time-range" />
 
-							<!-- start_time, end_time を格納するhidden要素 -->
-							<input type="hidden" id="start_time" />
-							<input type="hidden" id="end_time" />
+              <!-- start_time, end_time を格納するhidden要素 -->
+              <input type="hidden" id="start_time" />
+              <input type="hidden" id="end_time" />
 
-							<label class="block text-m font-bold mt-6 mb-2">メモ（任意）</label>
-							<textarea
-								id="memo"
-								class="w-full border px-3 py-2 mb-4"
-								rows="2"
-								placeholder="メモを入力（例：会議の目的や参加者など）"
-							></textarea>
-							<button
-								id="reserveBtn"
-								onclick="reserve()"
-								class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-							>
-								予約する
-							</button>
-						</div>
-						<div class="mt-6">
-							<h2 class="text-lg font-bold mb-4">定例MTG予約</h2>
-							<button
-								id="openRepeatModal"
-								class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded"
-							>
-								定例MTG予約
-							</button>
-							<div id="repeat-list" class="space-y-2 mt-4">
-								<!-- JSで追加 -->
-							</div>
-						</div>
-					</div>
-				</div>
+              <label class="block text-m font-bold mt-6 mb-2"
+                >メモ（任意）</label
+              >
+              <textarea
+                id="memo"
+                class="w-full border px-3 py-2 mb-4"
+                rows="2"
+                placeholder="メモを入力（例：会議の目的や参加者など）"
+              ></textarea>
+              <button
+                id="reserveBtn"
+                onclick="reserve()"
+                class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+              >
+                予約する
+              </button>
+            </div>
+            <div class="hidden mt-6">
+              <h2 class="text-lg font-bold mb-4">定例MTG予約</h2>
+              <button
+                id="openRepeatModal"
+                class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded"
+              >
+                定例MTG予約
+              </button>
+              <div id="repeat-list" class="space-y-2 mt-4">
+                <!-- JSで追加 -->
+              </div>
+            </div>
+          </div>
+        </div>
 
-				<!-- 📅 日付選択 -->
-				<div>
-					<div class="mb-4">
-						<label for="list-date" class="mr-2 font-semibold">📅 日付を選択：</label>
-						<input type="text" id="date" class="border rounded px-2 py-1 mb-4 shadow-sm" />
-					</div>
+        <!-- 📅 日付選択 -->
+        <div>
+          <div class="mb-4">
+            <label for="list-date" class="mr-2 font-semibold"
+              >📅 日付を選択：</label
+            >
+            <input
+              type="text"
+              id="date"
+              class="border rounded px-2 py-1 mb-4 shadow-sm"
+            />
+          </div>
 
-					<!-- 🗂️ 会議室別予約一覧 -->
-					<div id="roomWiseList" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-						<!-- A -->
-						<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
-							<h3 class="font-bold text-blue-600 text-lg mb-2">会議室</h3>
-							<img src="./img/office_01.png" alt="会議室" class="w-full h-32 object-cover mb-2" />
-							<ul id="list-room-A" class="space-y-2 text-sm list-none"></ul>
-						</div>
-						<!-- B -->
-						<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
-							<h3 class="font-bold text-green-600 text-lg mb-2">個室</h3>
-							<img src="./img/office_02.jpg" alt="プレハブ個室" class="w-full h-32 object-cover mb-2" />
-							<ul id="list-room-B" class="space-y-2 text-sm list-none"></ul>
-						</div>
-						<!-- C -->
-						<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
-							<h3 class="font-bold text-purple-600 text-lg mb-2">商談室</h3>
-							<img src="./img/office_03.png" alt="商談室" class="w-full h-32 object-cover mb-2" />
-							<ul id="list-room-C" class="space-y-2 text-sm list-none"></ul>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<footer class="flex flex-row gap-4 justify-between max-w-6xl mx-auto mt-8 p-4 >">
-			<div>
-				<h3>アップデート内容</h3>
-				<p>6/6</p>
-				<ul>
-					<li>セキュリティ強化</li>
-					<li>二重送信簡易対策</li>
-					<li>日付選択と時間選択のUI改善</li>
-					<li>内容選択の簡易化</li>
-				</ul>
-			</div>
-			<div>
-				<h3 class="text-m font-bold mb-4">ログイン</h3>
-				<ol class="list-decimal ml-4 mb-5">
-					<li>メールアドレスとパスワードを入力</li>
-					<li>「ログイン」ボタンをクリック</li>
-					<li>初回は新規登録が必要です。表示名はフルネームで入力してください</li>
-				</ol>
-				<h3 class="text-m font-bold mb-4">calendar登録</h3>
-				<ol class="list-decimal ml-4 mb-5">
-					<li>部屋の選択をする</li>
-					<li>内容を選択する</li>
-					<li>予約月日を選択する</li>
-					<li>時間帯を選択する</li>
-					<li>メモを入力する（任意）</li>
-					<li>「予約する」ボタンをクリック</li>
-					<li>予約が完了すると、モーダルに完了の通知が出ます</li>
-					<li>予約内容は、カレンダーに登録されます</li>
-				</ol>
-				<strong class="text-red-600">予約出来なかった時は岡山まで報告ください！！</strong>
-			</div>
-			<!-- <div>
+          <!-- 🗂️ 会議室別予約一覧 -->
+          <div id="roomWiseList" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- A -->
+            <div class="bg-white rounded-lg shadow p-2 border border-gray-200">
+              <h3 class="font-bold text-blue-600 text-lg mb-2">会議室</h3>
+              <img
+                src="./img/office_01.png"
+                alt="会議室"
+                class="w-full h-32 object-cover mb-2"
+              />
+              <ul id="list-room-A" class="space-y-2 text-sm list-none"></ul>
+            </div>
+            <!-- B -->
+            <div class="bg-white rounded-lg shadow p-2 border border-gray-200">
+              <h3 class="font-bold text-green-600 text-lg mb-2">個室</h3>
+              <img
+                src="./img/office_02.jpg"
+                alt="プレハブ個室"
+                class="w-full h-32 object-cover mb-2"
+              />
+              <ul id="list-room-B" class="space-y-2 text-sm list-none"></ul>
+            </div>
+            <!-- C -->
+            <div class="bg-white rounded-lg shadow p-2 border border-gray-200">
+              <h3 class="font-bold text-purple-600 text-lg mb-2">商談室</h3>
+              <img
+                src="./img/office_03.png"
+                alt="商談室"
+                class="w-full h-32 object-cover mb-2"
+              />
+              <ul id="list-room-C" class="space-y-2 text-sm list-none"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer
+      class="flex flex-row gap-4 justify-between max-w-6xl mx-auto mt-8 p-4 >"
+    >
+      <div>
+        <h3>アップデート内容</h3>
+        <p>6/6</p>
+        <ul>
+          <li>セキュリティ強化</li>
+          <li>二重送信簡易対策</li>
+          <li>日付選択と時間選択のUI改善</li>
+          <li>内容選択の簡易化</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-m font-bold mb-4">ログイン</h3>
+        <ol class="list-decimal ml-4 mb-5">
+          <li>メールアドレスとパスワードを入力</li>
+          <li>「ログイン」ボタンをクリック</li>
+          <li>
+            初回は新規登録が必要です。表示名はフルネームで入力してください
+          </li>
+        </ol>
+        <h3 class="text-m font-bold mb-4">calendar登録</h3>
+        <ol class="list-decimal ml-4 mb-5">
+          <li>部屋の選択をする</li>
+          <li>内容を選択する</li>
+          <li>予約月日を選択する</li>
+          <li>時間帯を選択する</li>
+          <li>メモを入力する（任意）</li>
+          <li>「予約する」ボタンをクリック</li>
+          <li>予約が完了すると、モーダルに完了の通知が出ます</li>
+          <li>予約内容は、カレンダーに登録されます</li>
+        </ol>
+        <strong class="text-red-600"
+          >予約出来なかった時は岡山まで報告ください！！</strong
+        >
+      </div>
+      <!-- <div>
 				<h3 class="text-m font-bold mb-4">Googleカレンダー設定</h3>
 				<ol class="list-decimal ml-4">
 					<li>Googleカレンダーを開く</li>
@@ -236,79 +300,109 @@
 					</li>
 				</ol>
 			</div> -->
-		</footer>
-		<!-- 🔽 定例MTG登録モーダル（HTML例） // ※ ボタン等に追加して表示制御する想定 -->
-		<div id="repeatModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-			<div class="bg-white p-6 rounded shadow w-full max-w-md">
-				<h2 class="text-xl font-bold mb-4">定例予約の作成</h2>
+    </footer>
+    <!-- 🔽 定例MTG登録モーダル（HTML例） // ※ ボタン等に追加して表示制御する想定 -->
+    <div
+      id="repeatModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+    >
+      <div class="bg-white p-6 rounded shadow w-full max-w-md">
+        <h2 class="text-xl font-bold mb-4">定例予約の作成</h2>
 
-				<label class="block mb-1">タイトル</label>
-				<input type="text" id="repeat-title" class="w-full border px-3 py-2 mb-4" />
+        <label class="block mb-1">タイトル</label>
+        <input
+          type="text"
+          id="repeat-title"
+          class="w-full border px-3 py-2 mb-4"
+        />
 
-				<label class="block mb-1">曜日（複数選択可）</label>
-				<div id="weekday-checkboxes" class="flex flex-wrap gap-3 mb-4">
-					<label><input type="checkbox" name="repeat-weekday" value="2" /> 月</label>
-					<label><input type="checkbox" name="repeat-weekday" value="3" /> 火</label>
-					<label><input type="checkbox" name="repeat-weekday" value="4" /> 水</label>
-					<label><input type="checkbox" name="repeat-weekday" value="5" /> 木</label>
-					<label><input type="checkbox" name="repeat-weekday" value="6" /> 金</label>
-					<label><input type="checkbox" name="repeat-weekday" value="7" /> 土</label>
-					<label><input type="checkbox" name="repeat-weekday" value="1" /> 日</label>
-				</div>
+        <label class="block mb-1">曜日（複数選択可）</label>
+        <div id="weekday-checkboxes" class="flex flex-wrap gap-3 mb-4">
+          <label
+            ><input type="checkbox" name="repeat-weekday" value="2" /> 月</label
+          >
+          <label
+            ><input type="checkbox" name="repeat-weekday" value="3" /> 火</label
+          >
+          <label
+            ><input type="checkbox" name="repeat-weekday" value="4" /> 水</label
+          >
+          <label
+            ><input type="checkbox" name="repeat-weekday" value="5" /> 木</label
+          >
+          <label
+            ><input type="checkbox" name="repeat-weekday" value="6" /> 金</label
+          >
+          <label
+            ><input type="checkbox" name="repeat-weekday" value="0" /> 土</label
+          >
+          <label
+            ><input type="checkbox" name="repeat-weekday" value="1" /> 日</label
+          >
+        </div>
 
-				<label class="block mb-1">時間帯</label>
-				<div class="flex items-center gap-2 mb-4">
-					<select id="repeat-start" class="border px-3 py-2 w-full">
-						<!-- JSで追加 -->
-					</select>
-					<span>～</span>
-					<select id="repeat-end" class="border px-3 py-2 w-full">
-						<!-- JSで追加 -->
-					</select>
-				</div>
+        <label class="block mb-1">時間帯</label>
+        <div class="flex items-center gap-2 mb-4">
+          <select id="repeat-start" class="border px-3 py-2 w-full">
+            <!-- JSで追加 -->
+          </select>
+          <span>～</span>
+          <select id="repeat-end" class="border px-3 py-2 w-full">
+            <!-- JSで追加 -->
+          </select>
+        </div>
 
-				<label class="block mb-1">期間（月数）</label>
-				<select id="repeat-months" class="w-full border px-3 py-2 mb-4">
-					<option value="1">1ヶ月</option>
-					<option value="2">2ヶ月</option>
-					<option value="3">3ヶ月</option>
-					<option value="4">4ヶ月</option>
-					<option value="5">5ヶ月</option>
-					<option value="6">6ヶ月</option>
-					<option value="7">7ヶ月</option>
-					<option value="8">8ヶ月</option>
-					<option value="9">9ヶ月</option>
-					<option value="10">10ヶ月</option>
-					<option value="11">11ヶ月</option>
-					<option value="12">12ヶ月</option>
-				</select>
+        <label class="block mb-1">期間（月数）</label>
+        <select id="repeat-months" class="w-full border px-3 py-2 mb-4">
+          <option value="1">1ヶ月</option>
+          <option value="2">2ヶ月</option>
+          <option value="3">3ヶ月</option>
+          <option value="4">4ヶ月</option>
+          <option value="5">5ヶ月</option>
+          <option value="6">6ヶ月</option>
+          <option value="7">7ヶ月</option>
+          <option value="8">8ヶ月</option>
+          <option value="9">9ヶ月</option>
+          <option value="10">10ヶ月</option>
+          <option value="11">11ヶ月</option>
+          <option value="12">12ヶ月</option>
+        </select>
 
-				<label class="block mb-1">会議室</label>
-				<select id="repeat-room" class="w-full border px-3 py-2 mb-4">
-					<option value="room1">会議室</option>
-					<option value="room2">個室</option>
-					<option value="room3">商談室</option>
-				</select>
+        <label class="block mb-1">会議室</label>
+        <select id="repeat-room" class="w-full border px-3 py-2 mb-4">
+          <option value="room1">会議室</option>
+          <option value="room2">個室</option>
+          <option value="room3">商談室</option>
+        </select>
 
-				<label class="block mb-1">メモ</label>
-				<textarea id="repeat-memo" class="w-full border px-3 py-2 mb-4" rows="2"></textarea>
+        <label class="block mb-1">メモ</label>
+        <textarea
+          id="repeat-memo"
+          class="w-full border px-3 py-2 mb-4"
+          rows="2"
+        ></textarea>
 
-				<div class="flex justify-end gap-2">
-					<button id="closeRepeatModal" class="bg-gray-300 px-4 py-2 rounded">キャンセル</button>
-					<button onclick="registerRepeatReservation()" class="bg-blue-500 text-white px-4 py-2 rounded">
-						登録
-					</button>
-				</div>
-			</div>
-		</div>
-		<script src="js/init.js"></script>
-		<script src="js/utils.js"></script>
-		<script src="js/auth.js"></script>
-		<script src="js/form.js"></script>
-		<script src="js/list.js"></script>
-		<script src="js/modalform.js"></script>
-		<script src="js/calendar.js"></script>
-		<script src="js/time.js"></script>
-		<script src="js/main.js"></script>
-	</body>
+        <div class="flex justify-end gap-2">
+          <button id="closeRepeatModal" class="bg-gray-300 px-4 py-2 rounded">
+            キャンセル
+          </button>
+          <button
+            onclick="registerRepeatReservation()"
+            class="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            登録
+          </button>
+        </div>
+      </div>
+    </div>
+    <script src="js/init.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/form.js"></script>
+    <script src="js/list.js"></script>
+    <script src="js/modalform.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="js/time.js"></script>
+    <script src="js/main.js"></script>
+  </body>
 </html>

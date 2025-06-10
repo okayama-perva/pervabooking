@@ -6,6 +6,7 @@ window.addEventListener('load', () => {
 	const today = new Date().toISOString().split('T')[0];
 	document.getElementById('list-date').value = today;
 	renderRoomWiseList(today);
+	setupClickListeners();
 });
 
 // window.addEventListener('load', syncListWithReservationDate);
@@ -50,7 +51,7 @@ function renderRoomWiseList(dateStr) {
 
 			['A', 'B', 'C'].forEach((roomKey) => {
 				const listEls = [
-					document.getElementById(`list-room-${roomKey}`),
+					// document.getElementById(`list-room-${roomKey}`),
 					document.getElementById(`list-room-${roomKey}-mobile`),
 				];
 				listEls.forEach((el) => {
@@ -70,6 +71,7 @@ function renderRoomWiseList(dateStr) {
 				}
 
 				filtered.forEach((res) => {
+					renderReservationItem(res, roomKey, uid);
 					const li = document.createElement('li');
 					li.className =
 						'bg-gray-50 border border-gray-200 p-2 rounded text-sm flex justify-between items-start';
@@ -163,4 +165,73 @@ function renderRoomWiseList(dateStr) {
 				});
 			});
 		});
+}
+// PC版のリスト表示のみ
+function renderReservationItem(res, roomKey, uid) {
+	const ul = document.getElementById(`list-room-${roomKey}`);
+	if (!ul) return;
+
+	// 🕒 時間から top / height を計算
+	const startParts = res.start.split(' ')[1].split(':');
+	const endParts = res.end.split(' ')[1].split(':');
+	const startHour = parseInt(startParts[0]) + parseInt(startParts[1]) / 60;
+	const endHour = parseInt(endParts[0]) + parseInt(endParts[1]) / 60;
+
+	const top = (startHour - 7) * 84;
+	const height = (endHour - startHour) * 84;
+
+	// 📦 予約ブロック要素
+	const li = document.createElement('li');
+	li.className = 'absolute left-1 right-1 bg-gray-50 border border-gray-300 rounded p-2 text-xs shadow';
+	li.style.top = `${top}px`;
+	li.style.height = `${height}px`;
+	li.style.overflow = 'hidden';
+
+	// 👤 誰の予約？
+	const who = res.uid === uid ? '自分' : res.username;
+	const time = `${startParts[0]}:${startParts[1]}〜${endParts[0]}:${endParts[1]}`;
+
+	// 💬 メモ（あれば）
+	let memoHtml = '';
+	if (res.memo) {
+		const short = res.memo.length > 50 ? res.memo.slice(0, 50) + '…' : res.memo;
+		memoHtml = `<div class="text-gray-500 italic mt-1 break-all" title="${res.memo}">メモ：${short}</div>`;
+	}
+
+	// 🔸 中身のHTML
+	li.innerHTML = `
+		<div class="text-[11px] font-bold">${time}</div>
+		<div class="text-[13px] font-semibold">${res.type}（${who}）</div>
+		${memoHtml}
+	`;
+
+	// ✨ 自分の予約は強調色に
+	if (res.uid === uid) {
+		li.classList.add('bg-yellow-50', 'border-yellow-300', 'text-yellow-800');
+	}
+
+	ul.appendChild(li);
+}
+
+function setupClickListeners() {
+	['A', 'B', 'C'].forEach((roomKey) => {
+		const ul = document.getElementById(`list-room-${roomKey}`);
+		if (!ul) return;
+
+		ul.addEventListener('click', (e) => {
+			const rect = ul.getBoundingClientRect();
+			const offsetY = e.clientY - rect.top;
+
+			const hourFloat = 7 + offsetY / 84;
+			const hour = Math.floor(hourFloat);
+			const minute = hourFloat % 1 >= 0.5 ? 30 : 0;
+			const timeStr = `${String(hour).padStart(2, '0')}:${minute === 0 ? '00' : '30'}`;
+
+			console.log(`クリック：部屋${roomKey}、時間${timeStr}`);
+
+			// 🔻 ここはあなたのフォームIDに置き換えてください
+			document.getElementById('room-select').value = roomKey;
+			document.getElementById('start-time').value = timeStr;
+		});
+	});
 }

@@ -188,22 +188,22 @@
 					<div id="roomWiseList" class="hidden md:grid grid-cols-[auto,1fr,1fr,1fr] gap-4 items-start">
 						<!-- 時間列 -->
 						<div
-							class="hidden md:flex flex-col space-y-4 pt-[72px] text-sm font-semibold text-gray-600 w-auto"
+							class="hidden md:flex flex-col pt-[180px] text-[10px] font-semibold text-gray-500 w-[44px] items-end pr-1"
 						>
-							<div>7:00</div>
-							<div>8:00</div>
-							<div>9:00</div>
-							<div>10:00</div>
-							<div>11:00</div>
-							<div>12:00</div>
-							<div>13:00</div>
-							<div>14:00</div>
-							<div>15:00</div>
-							<div>16:00</div>
-							<div>17:00</div>
-							<div>18:00</div>
-							<div>19:00</div>
-							<div>20:00</div>
+							<div class="h-[84px]">7:00</div>
+							<div class="h-[84px]">8:00</div>
+							<div class="h-[84px]">9:00</div>
+							<div class="h-[84px]">10:00</div>
+							<div class="h-[84px]">11:00</div>
+							<div class="h-[84px]">12:00</div>
+							<div class="h-[84px]">13:00</div>
+							<div class="h-[84px]">14:00</div>
+							<div class="h-[84px]">15:00</div>
+							<div class="h-[84px]">16:00</div>
+							<div class="h-[84px]">17:00</div>
+							<div class="h-[84px]">18:00</div>
+							<div class="h-[84px]">19:00</div>
+							<div class="h-[84px]">20:00</div>
 						</div>
 
 						<!-- リスト -->
@@ -212,21 +212,30 @@
 							<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
 								<h3 class="font-bold text-blue-600 text-lg mb-2">会議室</h3>
 								<img src="./img/office_01.png" alt="会議室" class="w-full h-32 object-cover mb-2" />
-								<ul id="list-room-A" class="space-y-4 text-sm list-none min-h-[1176px]"></ul>
+								<ul
+									id="list-room-A"
+									class="relative list-none h-[1176px] border rounded overflow-hidden bg-white hidden md:block"
+								></ul>
 							</div>
 
 							<!-- B: 個室 -->
 							<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
 								<h3 class="font-bold text-green-600 text-lg mb-2">個室</h3>
 								<img src="./img/office_02.jpg" alt="個室" class="w-full h-32 object-cover mb-2" />
-								<ul id="list-room-B" class="space-y-4 text-sm list-none min-h-[1176px]"></ul>
+								<ul
+									id="list-room-B"
+									class="relative list-none h-[1176px] border rounded overflow-hidden bg-white hidden md:block"
+								></ul>
 							</div>
 
 							<!-- C: 商談室 -->
 							<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
 								<h3 class="font-bold text-purple-600 text-lg mb-2">商談室</h3>
 								<img src="./img/office_03.png" alt="商談室" class="w-full h-32 object-cover mb-2" />
-								<ul id="list-room-C" class="space-y-4 text-sm list-none min-h-[1176px]"></ul>
+								<ul
+									id="list-room-C"
+									class="relative list-none h-[1176px] border rounded overflow-hidden bg-white hidden md:block"
+								></ul>
 							</div>
 						</div>
 					</div>

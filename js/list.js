@@ -8,7 +8,6 @@ window.addEventListener('load', () => {
 	renderRoomWiseList(today);
 });
 
-
 // window.addEventListener('load', syncListWithReservationDate);
 function renderRoomWiseList(dateStr) {
 	document.getElementById('list-date').value = dateStr;
@@ -23,8 +22,13 @@ function renderRoomWiseList(dateStr) {
 
 	// 3部屋分の表示エリアをリセット
 	['A', 'B', 'C'].forEach((roomKey) => {
-		const listEl = document.getElementById(`list-room-${roomKey}`);
-		listEl.innerHTML = '';
+		const listEls = [
+			document.getElementById(`list-room-${roomKey}`),
+			document.getElementById(`list-room-${roomKey}-mobile`),
+		];
+		listEls.forEach((el) => {
+			if (el) el.innerHTML = '';
+		});
 	});
 
 	// データ取得
@@ -45,14 +49,23 @@ function renderRoomWiseList(dateStr) {
 			});
 
 			['A', 'B', 'C'].forEach((roomKey) => {
-				const listEl = document.getElementById(`list-room-${roomKey}`);
+				const listEls = [
+					document.getElementById(`list-room-${roomKey}`),
+					document.getElementById(`list-room-${roomKey}-mobile`),
+				];
+				listEls.forEach((el) => {
+					if (el) el.innerHTML = '';
+				});
 				const filtered = roomGrouped[roomKey].sort((a, b) => a.start.localeCompare(b.start));
 
 				if (filtered.length === 0) {
-					const li = document.createElement('li');
-					li.textContent = '（予約なし）';
-					li.className = 'text-gray-400';
-					listEl.appendChild(li);
+					listEls.forEach((el) => {
+						if (!el) return;
+						const li = document.createElement('li');
+						li.textContent = '（予約なし）';
+						li.className = 'text-gray-400';
+						el.appendChild(li);
+					});
 					return;
 				}
 
@@ -144,7 +157,9 @@ function renderRoomWiseList(dateStr) {
 
 					li.appendChild(contentDiv);
 					li.appendChild(delBtn);
-					listEl.appendChild(li);
+					listEls.forEach((el) => {
+						if (el) el.appendChild(li.cloneNode(true));
+					});
 				});
 			});
 		});

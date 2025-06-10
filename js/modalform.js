@@ -201,7 +201,7 @@ async function saveRepeatGroupAndReservations({
 		});
 	}
 	document.getElementById('repeatModal').classList.add('hidden');
-	const saveButton = document.querySelector('#repeatModal');
+	const saveButton = document.querySelector('#repeatModal button.bg-blue-500');
 	// ✅ ボタン状態を元に戻す（必要なら）
 	saveButton.disabled = false;
 	saveButton.textContent = '登録';

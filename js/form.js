@@ -1,5 +1,5 @@
 // ✅ 予約フォーム関連処理（form.js）
-let selectedType = 'ZOOM';
+let selectedType = '社内';
 function selectType(type) {
 	selectedType = type;
 	['社内', '来客', 'ZOOM'].forEach((t) => {
@@ -150,11 +150,15 @@ async function reserve() {
 
 	if (!room || !date || !startTime || !endTime) {
 		alert('すべての項目を入力してください。');
+		reserveBtn.disabled = false;
+		reserveBtn.innerText = originalText;
 		return;
 	}
 
 	if (startTime >= endTime) {
 		alert('終了時間は開始時間より後にしてください。');
+		reserveBtn.disabled = false;
+		reserveBtn.innerText = originalText;
 		return;
 	}
 
@@ -170,6 +174,8 @@ async function reserve() {
 
 	if (overlap) {
 		alert('この時間帯はすでに予約があります！');
+		reserveBtn.disabled = false;
+		reserveBtn.innerText = originalText;
 		return;
 	}
 	const roomNames = {

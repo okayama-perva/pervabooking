@@ -2,408 +2,80 @@
 <html lang="ja">
 	<head>
 		<meta charset="UTF-8" />
+		<title>PERVA 社内ポータル</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>会議室予約</title>
 		<script src="https://cdn.tailwindcss.com"></script>
-		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-		<!-- ファビコン -->
-		<link rel="icon" href="./favicon.ico" type="image/x-icon" />
-
-		<!-- カレンダーのライブラリ -->
-		<!-- Flatpickr CSS -->
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
-		<!-- Flatpickr JS -->
-		<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-		<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
-		<!-- 時間選択のスライダー -->
-		<!-- ion.rangeSlider CSS -->
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ion-rangeslider@2.3.1/css/ion.rangeSlider.min.css" />
-		<!-- jQuery -->
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-		<!-- ion.rangeSlider JS -->
-		<script src="https://cdn.jsdelivr.net/npm/ion-rangeslider@2.3.1/js/ion.rangeSlider.min.js"></script>
-
-		<!-- カスタムスタイル -->
-		<link rel="stylesheet" href="css/style.css" />
+		<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+		<script src="/common/init.js"></script>
+		<script src="/common/authGuard.js" defer></script>
+		<script defer>
+			function logout() {
+				auth.signOut().then(() => {
+					localStorage.removeItem('authExpireAt');
+					window.location.href = '/auth/login.html';
+				});
+			}
+		</script>
 	</head>
-	<body class="bg-gray-100 p-8">
-		<!-- 🔐 未ログイン時のフォーム -->
-		<div id="authSection" class="max-w-md mx-auto bg-white p-6 rounded shadow">
-			<h2 class="text-lg font-bold mb-4">ログイン / 登録</h2>
-			<input
-				type="text"
-				id="username"
-				placeholder="表示名（新規登録のみ）"
-				class="w-full border px-3 py-2 mb-2"
-			/>
-			<input type="email" id="email" placeholder="メールアドレス" class="w-full border px-3 py-2 mb-2" />
-			<input type="password" id="password" placeholder="パスワード" class="w-full border px-3 py-2 mb-4" />
-			<button id="registerBtn" onclick="register()" class="bg-gray-500 text-white px-4 py-2 rounded">
-				新規登録
-			</button>
-			<button id="loginBtn" onclick="login()" class="bg-green-500 text-white px-4 py-2 rounded mr-2">
-				ログイン
-			</button>
+	<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center text-center px-4">
+		<h1 class="text-3xl font-bold mb-6 text-gray-800"> PERVA 社内ポータル</h1>
+		<h1 class="text-2xl font-bold mb-4 text-gray-800">ようこそ、<span id="welcomeName">...</span> さん！</h1>
+
+		<div class="space-y-4 w-full max-w-sm">
+			<a
+				href="/reservation/index.html"
+				class="block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl shadow transition text-lg"
+			>
+				📅 会議室を予約する
+			</a>
+			<a
+				href="#"
+				class="block bg-teal-600 hover:bg-teal-700 text-white font-semibold py-4 rounded-xl shadow transition text-lg"
+			>
+				🚗 車を予約する
+			</a>
+			<a
+				href="https://docs.google.com/forms/d/e/1FAIpQLSeq3AXZnUdQ5beZy75RaN1BGZB16x26MAPX4BYRBPhz7P0icw/viewform?usp=dialog"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="block bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-4 rounded-xl shadow transition text-lg"
+			>
+				💡 社内改善案を依頼する
+			</a>
 		</div>
 
-		<!-- 🔐 ログイン後の画面全体 -->
-		<div id="appSection" class="hidden relative bg-gray-100">
-			<!-- ヘッダー -->
-			<div class="flex justify-between items-center mb-4 max-w-6xl mx-auto">
-				<h1 class="text-2xl font-bold">会議室予約システム</h1>
-				<button onclick="logout()" class="text-sm text-blue-600 underline">ログアウト</button>
-			</div>
+		<button onclick="logout()" class="mt-8 text-sm text-gray-500 hover:underline hover:text-red-600 transition">
+			ログアウト
+		</button>
 
-			<!-- 2カラム表示（左：予約フォーム / 右：カレンダー） -->
-			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
-				<!-- 左：予約フォーム -->
-				<div class="flex flex-col flex-nowrap gap-6">
-					<div class="bg-white p-6 rounded shadow" style="height: fit-content">
-						<div>
-							<h2 class="text-xl font-bold mb-4">会議室予約</h2>
-							<!-- ▼ 会議室選択（タブ式） -->
-							<h3 class="text-m font-bold mb-4">部屋の選択</h3>
-							<div id="roomTabs" class="flex mb-4 space-x-2">
-								<button
-									onclick="selectRoom('room1')"
-									id="room-room1"
-									class="px-4 py-2 border rounded bg-blue-100 text-blue-800 font-bold"
-								>
-									会議室
-								</button>
-								<button
-									onclick="selectRoom('room2')"
-									id="room-room2"
-									class="px-4 py-2 border rounded text-green-800"
-								>
-									個室
-								</button>
-								<button
-									onclick="selectRoom('room3')"
-									id="room-room3"
-									class="px-4 py-2 border rounded text-purple-800"
-								>
-									商談室
-								</button>
-							</div>
-							<!-- ▼ 種別選択 -->
-							<h3 class="text-m font-bold mb-4">内容</h3>
-							<div id="typeSection">
-								<div id="tabs" class="flex mb-4 space-x-2">
-									<button
-										onclick="selectType('社内')"
-										id="tab-社内"
-										class="px-4 py-2 border rounded bg-blue-100"
-									>
-										社内打合せ
-									</button>
-									<button onclick="selectType('来客')" id="tab-来客" class="px-4 py-2 border rounded">
-										来客
-									</button>
-									<button onclick="selectType('ZOOM')" id="tab-ZOOM" class="px-4 py-2 border rounded">
-										ZOOM
-									</button>
-								</div>
-							</div>
-
-							
-
-							<!-- 🔽 セレクトは削除（or hidden化） -->
-							<input type="hidden" id="room" value="room1" />
-
-							<!-- ▼ 予約月日 -->
-							<label class="block text-m font-bold mb-4">予約月日</label>
-							<input type="text" id="list-date" class="border rounded px-2 py-1 mb-4 shadow-sm" />
-
-							<!-- ▼ 時間帯選択 -->
-							<label class="block text-m font-bold mb-6">時間帯を選択</label>
-							<input type="text" id="time-slider" name="time-range" />
-
-							<!-- start_time, end_time を格納するhidden要素 -->
-							<input type="hidden" id="start_time" />
-							<input type="hidden" id="end_time" />
-
-							<label class="block text-m font-bold mt-6 mb-2">メモ（任意）</label>
-							<textarea
-								id="memo"
-								class="w-full border px-3 py-2 mb-4"
-								rows="2"
-								placeholder="メモを入力（例：会議の目的や参加者など）"
-							></textarea>
-							<button
-								id="reserveBtn"
-								onclick="reserve()"
-								class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-							>
-								予約する
-							</button>
-						</div>
-						<div class="mt-6">
-							<h2 class="text-lg font-bold mb-4">定例MTG予約</h2>
-							<button
-								id="openRepeatModal"
-								class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded"
-							>
-								定例MTG予約
-							</button>
-							<div id="repeat-list" class="space-y-2 mt-4">
-								<!-- JSで追加 -->
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- 📅 日付選択 -->
-				<div>
-					<div class="mb-4">
-						<label for="list-date" class="mr-2 font-semibold">📅 日付を選択：</label>
-						<input type="text" id="date" class="border rounded px-2 py-1 mb-4 shadow-sm" />
-					</div>
-
-					<!-- ✅ モバイル表示（時間列なし・縦並び） -->
-					<div id="roomWiseList" class="grid grid-cols-1 gap-4 md:hidden">
-						<!-- A: 会議室 -->
-						<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
-							<h3 class="font-bold text-blue-600 text-lg mb-2">会議室</h3>
-							<img src="./img/office_01.png" alt="会議室" class="w-full h-32 object-cover mb-2" />
-							<ul id="list-room-room1-mobile" class="space-y-2 text-sm list-none"></ul>
-						</div>
-
-						<!-- B: 個室 -->
-						<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
-							<h3 class="font-bold text-green-600 text-lg mb-2">個室</h3>
-							<img src="./img/office_02.jpg" alt="個室" class="w-full h-32 object-cover mb-2" />
-							<ul id="list-room-room2-mobile" class="space-y-2 text-sm list-none"></ul>
-						</div>
-
-						<!-- C: 商談室 -->
-						<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
-							<h3 class="font-bold text-purple-600 text-lg mb-2">商談室</h3>
-							<img src="./img/office_03.png" alt="商談室" class="w-full h-32 object-cover mb-2" />
-							<ul id="list-room-room3-mobile" class="space-y-2 text-sm list-none"></ul>
-						</div>
-					</div>
-
-					<!-- ✅ PC表示（時間列あり・横並び） -->
-					<div id="roomWiseList" class="hidden md:grid grid-cols-[auto,1fr,1fr,1fr] gap-4 items-start">
-						<!-- 時間列 -->
-						<div
-							class="hidden md:flex flex-col pt-[180px] text-[10px] font-semibold text-gray-500 w-[44px] items-end pr-1"
-						>
-							<div class="h-[100px]">7:00</div>
-							<div class="h-[100px]">8:00</div>
-							<div class="h-[100px]">9:00</div>
-							<div class="h-[100px]">10:00</div>
-							<div class="h-[100px]">11:00</div>
-							<div class="h-[100px]">12:00</div>
-							<div class="h-[100px]">13:00</div>
-							<div class="h-[100px]">14:00</div>
-							<div class="h-[100px]">15:00</div>
-							<div class="h-[100px]">16:00</div>
-							<div class="h-[100px]">17:00</div>
-							<div class="h-[100px]">18:00</div>
-							<div class="h-[100px]">19:00</div>
-							<div class="h-[100px]">20:00</div>
-						</div>
-
-						<!-- リスト -->
-						<div class="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-							<!-- A: 会議室 -->
-							<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
-								<h3 class="font-bold text-blue-600 text-lg mb-2">会議室</h3>
-								<img src="./img/office_01.png" alt="会議室" class="w-full h-32 object-cover mb-2" />
-								<ul
-									id="list-room-room1"
-									class="relative list-none border rounded overflow-hidden bg-white hidden md:block"
-								></ul>
-							</div>
-
-							<!-- B: 個室 -->
-							<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
-								<h3 class="font-bold text-green-600 text-lg mb-2">個室</h3>
-								<img src="./img/office_02.jpg" alt="個室" class="w-full h-32 object-cover mb-2" />
-								<ul
-									id="list-room-room2"
-									class="relative list-none  border rounded overflow-hidden bg-white hidden md:block"
-								></ul>
-							</div>
-
-							<!-- C: 商談室 -->
-							<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
-								<h3 class="font-bold text-purple-600 text-lg mb-2">商談室</h3>
-								<img src="./img/office_03.png" alt="商談室" class="w-full h-32 object-cover mb-2" />
-								<ul
-									id="list-room-room3"
-									class="relative list-none  border rounded overflow-hidden bg-white hidden md:block"
-								></ul>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+		<div class="mt-12 text-gray-600 text-sm max-w-md">
+			<p>🚀 社内改善案を募集しています！</p>
+			<p>「できる・できない」「良い・悪い」は問いません。</p>
+			<p class="font-semibold text-gray-700 mt-2">自由な発想をお待ちしています！！</p>
 		</div>
-		<footer class="flex flex-row gap-4 justify-between max-w-6xl mx-auto mt-8 p-4 >">
-			<div>
-				<h3 class="text-m font-bold mb-4">アップデート内容</h3>
-				<p>6/9</p>
-				<ul class="list-disc ml-4 mb-5">
-					<li>セキュリティ強化</li>
-					<li>二重送信簡易対策</li>
-					<li>日付選択と時間選択のUI改善</li>
-					<li>内容選択の簡易化</li>
-					<li>定例の追加</li>
-				</ul>
-				<h3 class="text-m font-bold mb-4">定例の予約</h3>
-				<ol class="list-decimal ml-4 mb-5">
-					<li>定例MTG予約ボタンを押す</li>
-					<li>共通タイトルを入力</li>
-					<li>曜日にチェックを付ける</li>
-					<li>時間帯の設定</li>
-					<li>
-						期間を選択。１か月にすると現在から月末までになる。ダブりが発生した場合は先に入っていた方が優先される。
-					</li>
-					<li>会議室を選択</li>
-					<li>メモを入力（任意）</li>
-					<li><strong>登録には時間がかかるバグ回避の為に他操作・ブラウザは立ち上げたままにする</strong></li>
-				</ol>
-			</div>
-			<div>
-				<h3 class="text-m font-bold mb-4">ログイン</h3>
-				<ol class="list-decimal ml-4 mb-5">
-					<li>メールアドレスとパスワードを入力</li>
-					<li>「ログイン」ボタンをクリック</li>
-					<li>初回は新規登録が必要です。表示名はフルネームで入力してください</li>
-				</ol>
-				<h3 class="text-m font-bold mb-4">calendar登録</h3>
-				<ol class="list-decimal ml-4 mb-5">
-					<li>部屋の選択をする</li>
-					<li>内容を選択する</li>
-					<li>予約月日を選択する</li>
-					<li>時間帯を選択する</li>
-					<li>メモを入力する（任意）</li>
-					<li>「予約する」ボタンをクリック</li>
-					<li>予約が完了すると、モーダルに完了の通知が出ます</li>
-					<li>予約内容は、カレンダーに登録されます</li>
-				</ol>
-				<strong class="text-red-600">操作方法がわからない予約出来なかった時は岡山まで報告ください！！</strong>
-				<strong class="text-red-600">フィードバックも待ってます！！</strong>
-				<a
-					href="https://docs.google.com/forms/d/e/1FAIpQLSeq3AXZnUdQ5beZy75RaN1BGZB16x26MAPX4BYRBPhz7P0icw/viewform?usp=dialog"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="text-xl font-bold text-blue-600 underline"
-					>フィードバックフォームはこちら</a
-				>
-				<h2>管理者用ボタン</h2>
-				<ul>
-					<li>
-						<button
-							id="deleteOldBtn"
-							onclick="deleteOldReservationsWithLog()"
-							class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-						>
-							🧹 先月以前の予約を削除する
-						</button>
-					</li>
-				</ul>
-			</div>
-			<!-- <div>
-				<h3 class="text-m font-bold mb-4">Googleカレンダー設定</h3>
-				<ol class="list-decimal ml-4">
-					<li>Googleカレンダーを開く</li>
-					<li>⚙マークをクリック</li>
-					<li>設定をクリック</li>
-					<li>左メニューの「カレンダーを追加」から「URLで追加」を選択</li>
-					<li>
-						URLを入力 : calendar共有URL：<small
-							>https://calendar.google.com/calendar/ical/karendazhuanyong%40gmail.com/public/basic.ics</small
-						>
-					</li>
-					<li>「カレンダーを追加」をクリック</li>
-					<li>
-						他のカレンダーに”karendazhuanyong@gmail.com”という名前で追加されます。予約内容が表示されます
-					</li>
-					<li>
-						カレンダーの”：”をクリックしてカレンダー名・カレンダーの色を変更することで、他のカレンダーと区別できます
-					</li>
-				</ol>
-			</div> -->
-		</footer>
-		<!-- 🔽 定例MTG登録モーダル（HTML例） // ※ ボタン等に追加して表示制御する想定 -->
-		<div id="repeatModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-			<div class="bg-white p-6 rounded shadow w-full max-w-md">
-				<h2 class="text-xl font-bold mb-4">定例予約の作成</h2>
-
-				<label class="block mb-1">タイトル</label>
-				<input type="text" id="repeat-title" class="w-full border px-3 py-2 mb-4" />
-
-				<label class="block mb-1">曜日（複数選択可）</label>
-				<div id="weekday-checkboxes" class="flex flex-wrap gap-3 mb-4">
-					<label><input type="checkbox" name="repeat-weekday" value="2" /> 月</label>
-					<label><input type="checkbox" name="repeat-weekday" value="3" /> 火</label>
-					<label><input type="checkbox" name="repeat-weekday" value="4" /> 水</label>
-					<label><input type="checkbox" name="repeat-weekday" value="5" /> 木</label>
-					<label><input type="checkbox" name="repeat-weekday" value="6" /> 金</label>
-					<label><input type="checkbox" name="repeat-weekday" value="0" /> 土</label>
-					<label><input type="checkbox" name="repeat-weekday" value="1" /> 日</label>
-				</div>
-
-				<label class="block mb-1">時間帯</label>
-				<div class="flex items-center gap-2 mb-4">
-					<select id="repeat-start" class="border px-3 py-2 w-full">
-						<!-- JSで追加 -->
-					</select>
-					<span>～</span>
-					<select id="repeat-end" class="border px-3 py-2 w-full">
-						<!-- JSで追加 -->
-					</select>
-				</div>
-
-				<label class="block mb-1">期間（月数）</label>
-				<select id="repeat-months" class="w-full border px-3 py-2 mb-4">
-					<option value="1">1ヶ月</option>
-					<option value="2">2ヶ月</option>
-					<option value="3">3ヶ月</option>
-					<option value="4">4ヶ月</option>
-					<option value="5">5ヶ月</option>
-					<option value="6">6ヶ月</option>
-					<option value="7">7ヶ月</option>
-					<option value="8">8ヶ月</option>
-					<option value="9">9ヶ月</option>
-					<option value="10">10ヶ月</option>
-					<option value="11">11ヶ月</option>
-					<option value="12">12ヶ月</option>
-				</select>
-
-				<label class="block mb-1">会議室</label>
-				<select id="repeat-room" class="w-full border px-3 py-2 mb-4">
-					<option value="room1">会議室</option>
-					<option value="room2">個室</option>
-					<option value="room3">商談室</option>
-				</select>
-
-				<label class="block mb-1">メモ</label>
-				<textarea id="repeat-memo" class="w-full border px-3 py-2 mb-4" rows="2"></textarea>
-
-				<div class="flex justify-end gap-2">
-					<button id="closeRepeatModal" class="bg-gray-300 px-4 py-2 rounded">キャンセル</button>
-					<button onclick="registerRepeatReservation()" class="bg-blue-500 text-white px-4 py-2 rounded">
-						登録
-					</button>
-				</div>
-			</div>
-		</div>
-		<script src="js/init.js"></script>
-		<script src="js/utils.js"></script>
-		<script src="js/auth.js"></script>
-		<script src="js/form.js"></script>
-		<script src="js/list.js"></script>
-		<script src="js/modalform.js"></script>
-		<script src="js/calendar.js"></script>
-		<script src="js/time.js"></script>
-		<script src="js/delete.js"></script>
-		<script src="js/main.js"></script>
+		<script>
+			auth.onAuthStateChanged((user) => {
+				if (user) {
+					const uid = user.uid;
+					db.collection('users')
+						.doc(uid)
+						.get()
+						.then((doc) => {
+							if (doc.exists) {
+								const username = doc.data().username;
+								document.getElementById('welcomeName').textContent = username;
+							} else {
+								document.getElementById('welcomeName').textContent = 'ユーザー';
+							}
+						})
+						.catch((error) => {
+							console.error('ユーザー名の取得に失敗:', error);
+							document.getElementById('welcomeName').textContent = 'エラー';
+						});
+				}
+			});
+		</script>
 	</body>
 </html>

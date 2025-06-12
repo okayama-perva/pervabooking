@@ -6,8 +6,12 @@ function selectType(type) {
 	['社内', '来客', 'ZOOM'].forEach((t) => {
 		const btn = document.getElementById(`tab-${t}`);
 		btn.classList.remove(
-			'bg-blue-100', 'bg-green-100', 'bg-purple-100',
-			'text-blue-800', 'text-green-800', 'text-purple-800',
+			'bg-blue-100',
+			'bg-green-100',
+			'bg-purple-100',
+			'text-blue-800',
+			'text-green-800',
+			'text-purple-800',
 			'font-bold'
 		);
 	});
@@ -28,9 +32,12 @@ function selectRoom(room) {
 	['room1', 'room2', 'room3'].forEach((r) => {
 		const btn = document.getElementById(`room-${r}`);
 		btn.classList.remove(
-			'bg-blue-100', 'text-blue-800',
-			'bg-green-100', 'text-green-800',
-			'bg-purple-100', 'text-purple-800',
+			'bg-blue-100',
+			'text-blue-800',
+			'bg-green-100',
+			'text-green-800',
+			'bg-purple-100',
+			'text-purple-800',
 			'font-bold'
 		);
 	});
@@ -40,21 +47,25 @@ function selectRoom(room) {
 
 	// 🔁 会議室に応じて種別切り替え
 	if (room === 'room2' || room === 'room3') {
-		selectType('ZOOM');
+		// 🔽 ボタン表示切り替え
 		document.getElementById('tab-社内').style.display = 'none';
 		document.getElementById('tab-来客').style.display = 'none';
 		document.getElementById('tab-ZOOM').style.display = 'inline-block';
+
+		// 🔽 少し遅らせてクラス付与
+		setTimeout(() => selectType('ZOOM'), 0);
 	} else {
 		document.getElementById('tab-社内').style.display = 'inline-block';
 		document.getElementById('tab-来客').style.display = 'inline-block';
 		document.getElementById('tab-ZOOM').style.display = 'inline-block';
+
+		selectType('社内');
 	}
 
 	// 🔃 予約済み時間の更新は1回だけでOK
 	const date = document.getElementById('list-date').value;
 	loadReservedRanges(room, date);
 }
-
 
 function generateTimeOptions() {
 	const startSelect = document.getElementById('start_time');

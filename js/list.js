@@ -16,11 +16,10 @@ function renderRoomWiseList(dateStr) {
 	const roomMap = { room1: 'A', room2: 'B', room3: 'C' };
 
 	// リスト初期化（PC + モバイル）
-	['A', 'B', 'C'].forEach((roomKey) => {
-		const listEls = [
-			document.getElementById(`list-room-${roomKey}`),
-			document.getElementById(`list-room-${roomKey}-mobile`),
-		];
+	['room1', 'room2', 'room3'].forEach((roomKey) => {
+		const pcList = document.getElementById(`list-room-${roomKey}`);
+		const mobileList = document.getElementById(`list-room-${roomKey}-mobile`);
+		const listEls = [pcList, mobileList];
 		listEls.forEach((el) => {
 			if (el) el.innerHTML = '';
 		});
@@ -35,13 +34,14 @@ function renderRoomWiseList(dateStr) {
 				...doc.data(),
 			}));
 
-			const roomGrouped = { A: [], B: [], C: [] };
+			const roomGrouped = { room1: [], room2: [], room3: [] };
 			reservations.forEach((res) => {
-				const key = roomMap[res.room];
-				if (key) roomGrouped[key].push(res);
+				if (roomGrouped[res.room]) {
+					roomGrouped[res.room].push(res);
+				}
 			});
 
-			['A', 'B', 'C'].forEach((roomKey) => {
+			['room1', 'room2', 'room3'].forEach((roomKey) => {
 				const filtered = roomGrouped[roomKey].sort((a, b) => a.start.localeCompare(b.start));
 				const pcList = document.getElementById(`list-room-${roomKey}`);
 				const mobileList = document.getElementById(`list-room-${roomKey}-mobile`);
@@ -67,13 +67,11 @@ function renderRoomWiseList(dateStr) {
 
 						emptyDiv.onclick = () => {
 							// 🔹部屋選択
-							document.getElementById('room').value = `room${
-								roomKey === 'A' ? 1 : roomKey === 'B' ? 2 : 3
-							}`;
-							selectRoom(`room${roomKey === 'A' ? 1 : roomKey === 'B' ? 2 : 3}`);
+							document.getElementById('room').value = roomKey;
+							selectRoom(roomKey);
 
 							// 🔹内容（type）自動選択 ←★ ここを追加
-							const type = roomKey === 'A' ? '社内' : 'ZOOM';
+							const type = roomKey === 'room1' ? '社内' : 'ZOOM';
 							selectType(type); // ←既存の関数を使って選択状態を更新
 
 							// 🔹日付反映
@@ -92,10 +90,14 @@ function renderRoomWiseList(dateStr) {
 							});
 
 							// ✅ start_time, end_time にも反映（保険）
-							// updateTimeFields(from, to);
+							document.getElementById('start_time').value = from;
+							const endHour = Math.floor(to);
+							const endMinute = to % 1 === 0.5 ? '30' : '00';
+							document.getElementById('end_time').value = `${String(endHour).padStart(2, '0')}:${endMinute}`;
+
 
 							// 🔹メモ欄を初期化
-							document.getElementById('memo').value = '';
+							// document.getElementById('memo').value = '';
 
 							// 🔹予約タイプを初期化（必要に応じて）
 							selectType('社内'); // デフォルト値があるなら明示的に
@@ -203,7 +205,6 @@ function renderReservationItem(res, roomKey, uid) {
 
 	const top = (startHour - 7) * 100 + marginY; // 7:00を基準に計算
 	const height = (endHour - startHour) * 100 - marginY * 2;
-	console.log(`予約時間: ${res.start} - ${res.end}, top: ${top}, height: ${height}`);
 
 	// 📦 予約ブロック要素
 	const li = document.createElement('li');
@@ -288,7 +289,7 @@ function renderReservationItem(res, roomKey, uid) {
 }
 
 function setupClickListeners() {
-	['A', 'B', 'C'].forEach((roomKey) => {
+	['room1', 'room2', 'room3'].forEach((roomKey) => {
 		const ul = document.getElementById(`list-room-${roomKey}`);
 		if (!ul) return;
 

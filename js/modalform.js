@@ -269,7 +269,7 @@ async function renderRepeatGroups() {
 		}
 
 		// 表示用の曜日
-		const weekdaysStr = data.weekdays.map((n) => ['土', '月', '火', '水', '木', '金', '日'][n]).join('・');
+		const weekdaysStr = data.weekdays.map((n) => ['土','日', '月', '火', '水', '木', '金',][n]).join('・');
 
 		const div = document.createElement('div');
 		div.className = 'border p-3 rounded shadow-sm flex justify-between items-center';
@@ -278,6 +278,7 @@ async function renderRepeatGroups() {
         <div class="font-bold">${data.title}</div>
         <div class="text-sm text-gray-600">毎週 ${weekdaysStr}曜日 ${data.timeFrom}〜${data.timeTo}</div>
         <div class="text-xs text-gray-400">月数: ${data.months || '?'}ヶ月 / 登録数: ${data.count || 0}件</div>
+		<div class="text-xs text-gray-500">登録者: ${data.username || '不明'} </div>
       </div>
       <button onclick="deleteRepeatGroup('${doc.id}', this)" class="text-red-600 hover:underline text-sm">🗑️ 削除</button>
     `;

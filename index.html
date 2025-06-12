@@ -160,25 +160,83 @@
 						<input type="text" id="date" class="border rounded px-2 py-1 mb-4 shadow-sm" />
 					</div>
 
-					<!-- 🗂️ 会議室別予約一覧 -->
-					<div id="roomWiseList" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-						<!-- A -->
+					<!-- ✅ モバイル表示（時間列なし・縦並び） -->
+					<div id="roomWiseList" class="grid grid-cols-1 gap-4 md:hidden">
+						<!-- A: 会議室 -->
 						<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
 							<h3 class="font-bold text-blue-600 text-lg mb-2">会議室</h3>
 							<img src="./img/office_01.png" alt="会議室" class="w-full h-32 object-cover mb-2" />
-							<ul id="list-room-A" class="space-y-2 text-sm list-none"></ul>
+							<ul id="list-room-room1-mobile" class="space-y-2 text-sm list-none"></ul>
 						</div>
-						<!-- B -->
+
+						<!-- B: 個室 -->
 						<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
 							<h3 class="font-bold text-green-600 text-lg mb-2">個室</h3>
-							<img src="./img/office_02.jpg" alt="プレハブ個室" class="w-full h-32 object-cover mb-2" />
-							<ul id="list-room-B" class="space-y-2 text-sm list-none"></ul>
+							<img src="./img/office_02.jpg" alt="個室" class="w-full h-32 object-cover mb-2" />
+							<ul id="list-room-room2-mobile" class="space-y-2 text-sm list-none"></ul>
 						</div>
-						<!-- C -->
+
+						<!-- C: 商談室 -->
 						<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
 							<h3 class="font-bold text-purple-600 text-lg mb-2">商談室</h3>
 							<img src="./img/office_03.png" alt="商談室" class="w-full h-32 object-cover mb-2" />
-							<ul id="list-room-C" class="space-y-2 text-sm list-none"></ul>
+							<ul id="list-room-room3-mobile" class="space-y-2 text-sm list-none"></ul>
+						</div>
+					</div>
+
+					<!-- ✅ PC表示（時間列あり・横並び） -->
+					<div id="roomWiseList" class="hidden md:grid grid-cols-[auto,1fr,1fr,1fr] gap-4 items-start">
+						<!-- 時間列 -->
+						<div
+							class="hidden md:flex flex-col pt-[180px] text-[10px] font-semibold text-gray-500 w-[44px] items-end pr-1"
+						>
+							<div class="h-[100px]">7:00</div>
+							<div class="h-[100px]">8:00</div>
+							<div class="h-[100px]">9:00</div>
+							<div class="h-[100px]">10:00</div>
+							<div class="h-[100px]">11:00</div>
+							<div class="h-[100px]">12:00</div>
+							<div class="h-[100px]">13:00</div>
+							<div class="h-[100px]">14:00</div>
+							<div class="h-[100px]">15:00</div>
+							<div class="h-[100px]">16:00</div>
+							<div class="h-[100px]">17:00</div>
+							<div class="h-[100px]">18:00</div>
+							<div class="h-[100px]">19:00</div>
+							<div class="h-[100px]">20:00</div>
+						</div>
+
+						<!-- リスト -->
+						<div class="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+							<!-- A: 会議室 -->
+							<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
+								<h3 class="font-bold text-blue-600 text-lg mb-2">会議室</h3>
+								<img src="./img/office_01.png" alt="会議室" class="w-full h-32 object-cover mb-2" />
+								<ul
+									id="list-room-room1"
+									class="relative list-none border rounded overflow-hidden bg-white hidden md:block"
+								></ul>
+							</div>
+
+							<!-- B: 個室 -->
+							<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
+								<h3 class="font-bold text-green-600 text-lg mb-2">個室</h3>
+								<img src="./img/office_02.jpg" alt="個室" class="w-full h-32 object-cover mb-2" />
+								<ul
+									id="list-room-room2"
+									class="relative list-none  border rounded overflow-hidden bg-white hidden md:block"
+								></ul>
+							</div>
+
+							<!-- C: 商談室 -->
+							<div class="bg-white rounded-lg shadow p-2 border border-gray-200">
+								<h3 class="font-bold text-purple-600 text-lg mb-2">商談室</h3>
+								<img src="./img/office_03.png" alt="商談室" class="w-full h-32 object-cover mb-2" />
+								<ul
+									id="list-room-room3"
+									class="relative list-none  border rounded overflow-hidden bg-white hidden md:block"
+								></ul>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -206,7 +264,7 @@
 					</li>
 					<li>会議室を選択</li>
 					<li>メモを入力（任意）</li>
-					<li><strong>登録には時間がかかるバグ回避の為に他操作はしない事</strong></li>
+					<li><strong>登録には時間がかかるバグ回避の為に他操作・ブラウザは立ち上げたままにする</strong></li>
 				</ol>
 			</div>
 			<div>
@@ -241,7 +299,7 @@
 					<li>
 						<button
 							id="deleteOldBtn"
-							onclick="testDeleteOldReservations()"
+							onclick="deleteOldReservationsWithLog()"
 							class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
 						>
 							🧹 先月以前の予約を削除する

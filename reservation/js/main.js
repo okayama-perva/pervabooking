@@ -9,12 +9,6 @@ auth.onAuthStateChanged((user) => {
 	const today = now.toISOString().split('T')[0];
 
 	if (user) {
-		// 表示切り替え
-		if (authSection) authSection.classList.add('hidden');
-		if (appSection) appSection.classList.remove('hidden');
-
-	
-
 		// 初期化処理
 		if (document.getElementById('list-date')) {
 			document.getElementById('list-date').value = today;
@@ -30,7 +24,6 @@ auth.onAuthStateChanged((user) => {
 			loadReservedRanges(room, today);
 		}
 	} else {
-		if (authSection) authSection.classList.remove('hidden');
-		if (appSection) appSection.classList.add('hidden');
+		window.location.href = '/auth/login.html';
 	}
 });

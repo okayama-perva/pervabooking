@@ -44,23 +44,41 @@ function register() {
     });
 }
 
-function login() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
 
-  loginBtn.disabled = true;
-  const originalText = loginBtn.innerText;
-  loginBtn.innerText = 'ログイン中...';
+  function login() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
 
-  auth.signInWithEmailAndPassword(email, password)
-    .then(() => {
-      const expireAt = Date.now() + 3 * 24 * 60 * 60 * 1000;
-      localStorage.setItem('authExpireAt', expireAt);
-      window.location.href = '/index.html';
-    })
-    .catch((err) => {
-      alert('ログイン失敗：メールアドレス・パスワードを確認してください');
-      loginBtn.disabled = false;
-      loginBtn.innerText = originalText;
+    loginBtn.disabled = true;
+    const originalText = loginBtn.innerText;
+    loginBtn.innerText = 'ログイン中...';
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        const expireAt = Date.now() + 3 * 24 * 60 * 60 * 1000;
+        localStorage.setItem('authExpireAt', expireAt);
+        window.location.href = '/index.html';
+      })
+      .catch((err) => {
+        alert('ログイン失敗：メールアドレス・パスワードを確認してください');
+        loginBtn.disabled = false;
+        loginBtn.innerText = originalText;
+      });
+  }
+
+  // ✅ Enterキーでログイン
+  document.addEventListener('DOMContentLoaded', () => {
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+
+    [emailInput, passwordInput].forEach((input) => {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault(); // submitなどのデフォルト動作防止
+          login(); // ログイン実行
+        }
+      });
     });
-}
+  });
+
+

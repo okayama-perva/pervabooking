@@ -8,13 +8,13 @@ auth.onAuthStateChanged((user) => {
     auth.signOut().then(() => {
       localStorage.removeItem('authExpireAt');
       alert('セッションが切れました。再度ログインしてください。');
-      window.location.href = '/auth/login.html';
+      window.location.href = 'pervabookingt/auth/login.html';
     });
     return;
   }
 
   if (!user) {
-    // 未ログイン → ログインページへ
-    window.location.href = '/auth/login.html';
+    // 本番では修正が必要
+    window.location.href = 'pervabookingt/auth/login.html';
   }
 });

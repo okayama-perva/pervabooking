@@ -32,7 +32,7 @@
 			function logout() {
 				auth.signOut().then(() => {
 					localStorage.removeItem('authExpireAt');
-					window.location.href = '/auth/login.html';
+					window.location.href = './auth/login.html';
 				});
 			}
 		</script>

@@ -21,6 +21,7 @@
 		<!-- Flatpickr JS -->
 		<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 		<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+
 		<!-- 時間選択のスライダー -->
 		<!-- ion.rangeSlider CSS -->
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ion-rangeslider@2.3.1/css/ion.rangeSlider.min.css" />
@@ -28,6 +29,8 @@
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 		<!-- ion.rangeSlider JS -->
 		<script src="https://cdn.jsdelivr.net/npm/ion-rangeslider@2.3.1/js/ion.rangeSlider.min.js"></script>
+
+		<!-- ログアウトボタン -->
 		<script defer>
 			function logout() {
 				auth.signOut().then(() => {
@@ -39,6 +42,7 @@
 		<!-- カスタムスタイル -->
 		<link rel="stylesheet" href="css/style.css" />
 	</head>
+	
 	<body class="bg-gray-100 p-8">
 		<!-- 🔐 ログイン後の画面全体 -->
 		<div id="appSection" class="relative bg-gray-100">
@@ -245,6 +249,8 @@
 				📘 使い方・アップデート説明ページへ
 			</a>
 		</footer>
+
+		
 		<!-- 🔽 定例MTG登録モーダル（HTML例） // ※ ボタン等に追加して表示制御する想定 -->
 		<div id="repeatModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
 			<div class="bg-white p-6 rounded shadow w-full max-w-md">

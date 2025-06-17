@@ -1,25 +1,5 @@
 // ✅ 予約フォーム関連処理（form.js）
-let selectedType = '社内';
-function selectType(type) {
-	selectedType = type;
-
-	['社内', '来客', 'ZOOM'].forEach((t) => {
-		const btn = document.getElementById(`tab-${t}`);
-		btn.classList.remove(
-			'bg-blue-100',
-			'bg-green-100',
-			'bg-purple-100',
-			'text-blue-800',
-			'text-green-800',
-			'text-purple-800',
-			'font-bold'
-		);
-	});
-
-	const selectedBtn = document.getElementById(`tab-${type}`);
-	selectedBtn.classList.add('bg-blue-100', 'font-bold');
-}
-// ✅ 会議室（room1〜3）を選択
+// 会議室（room1〜3）を選択
 function selectRoom(room) {
 	document.getElementById('room').value = room;
 
@@ -28,7 +8,7 @@ function selectRoom(room) {
 		room2: ['bg-green-100', 'text-green-800'],
 		room3: ['bg-purple-100', 'text-purple-800'],
 	};
-
+	// 🔁 ボタンのスタイルをリセット
 	['room1', 'room2', 'room3'].forEach((r) => {
 		const btn = document.getElementById(`room-${r}`);
 		btn.classList.remove(
@@ -45,13 +25,12 @@ function selectRoom(room) {
 	const selectedBtn = document.getElementById(`room-${room}`);
 	selectedBtn.classList.add(...roomColorMap[room], 'font-bold');
 
-	// 🔁 会議室に応じて種別切り替え
+	// 🔁 特定の会議室ではZOOMのみ表示
 	if (room === 'room2' || room === 'room3') {
 		// 🔽 ボタン表示切り替え
 		document.getElementById('tab-社内').style.display = 'none';
 		document.getElementById('tab-来客').style.display = 'none';
 		document.getElementById('tab-ZOOM').style.display = 'inline-block';
-
 		// 🔽 少し遅らせてクラス付与
 		setTimeout(() => selectType('ZOOM'), 0);
 	} else {
@@ -62,85 +41,112 @@ function selectRoom(room) {
 		selectType('社内');
 	}
 
-	// 🔃 予約済み時間の更新は1回だけでOK
+	// 🔄 選択された会議室・日付に応じて予約済み時間を更新
 	const date = document.getElementById('list-date').value;
 	loadReservedRanges(room, date);
 }
 
-function generateTimeOptions() {
-	const startSelect = document.getElementById('start_time');
-	const endSelect = document.getElementById('end_time');
-
-	// 7:00〜22:00までの範囲（30分刻み）
-	for (let h = 7; h <= 22; h++) {
-		for (let m of [0, 30]) {
-			const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-			const option1 = document.createElement('option');
-			const option2 = document.createElement('option');
-			option1.value = option1.textContent = time;
-			option2.value = option2.textContent = time;
-			startSelect.appendChild(option1);
-			endSelect.appendChild(option2);
-		}
-	}
+// タイプの初期値
+let selectedType = '社内';
+// タイプのスタイルをリセット
+function selectType(type) {
+	selectedType = type;
+	['社内', '来客', 'ZOOM'].forEach((t) => {
+		const btn = document.getElementById(`tab-${t}`);
+		btn.classList.remove(
+			'bg-blue-100',
+			'bg-green-100',
+			'bg-purple-100',
+			'text-blue-800',
+			'text-green-800',
+			'text-purple-800',
+			'font-bold'
+		);
+	});
+	// 選択されたタイプのボタンにスタイルを適用
+	const selectedBtn = document.getElementById(`tab-${type}`);
+	selectedBtn.classList.add('bg-blue-100', 'font-bold');
 }
 
-document.getElementById('start_time').addEventListener('change', function () {
-	const selectedStart = this.value;
-	const endSelect = document.getElementById('end_time');
-	const currentEnd = endSelect.value;
 
-	endSelect.innerHTML = '';
+// 下記削除予定
+// function generateTimeOptions() {削除予定
+// 	const startSelect = document.getElementById('start_time');
+// 	const endSelect = document.getElementById('end_time');
 
-	// 先頭に空の選択肢（比較対象にならない）
-	const emptyOption = document.createElement('option');
-	emptyOption.value = '';
-	emptyOption.textContent = '';
-	endSelect.appendChild(emptyOption);
+// 	// 7:00〜22:00までの範囲（30分刻み）
+// 	for (let h = 7; h <= 22; h++) {
+// 		for (let m of [0, 30]) {
+// 			const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+// 			const option1 = document.createElement('option');
+// 			const option2 = document.createElement('option');
+// 			option1.value = option1.textContent = time;
+// 			option2.value = option2.textContent = time;
+// 			startSelect.appendChild(option1);
+// 			endSelect.appendChild(option2);
+// 		}
+// 	}
+// }
 
-	for (let h = 7; h <= 22; h++) {
-		for (let m of [0, 30]) {
-			const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-			if (time > selectedStart) {
-				const option = document.createElement('option');
-				option.value = option.textContent = time;
-				endSelect.appendChild(option);
-			}
-		}
-	}
+// document.getElementById('start_time').addEventListener('change', function () {
+// 	const selectedStart = this.value;
+// 	const endSelect = document.getElementById('end_time');
+// 	const currentEnd = endSelect.value;
 
-	if (currentEnd > selectedStart) {
-		endSelect.value = currentEnd;
-	}
-});
+// 	endSelect.innerHTML = '';
 
-document.getElementById('end_time').addEventListener('change', function () {
-	const selectedEnd = this.value;
-	const startSelect = document.getElementById('start_time');
-	const currentStart = startSelect.value;
+// 	// 先頭に空の選択肢（比較対象にならない）
+// 	const emptyOption = document.createElement('option');
+// 	emptyOption.value = '';
+// 	emptyOption.textContent = '';
+// 	endSelect.appendChild(emptyOption);
 
-	startSelect.innerHTML = '';
+// 	for (let h = 7; h <= 22; h++) {
+// 		for (let m of [0, 30]) {
+// 			const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+// 			if (time > selectedStart) {
+// 				const option = document.createElement('option');
+// 				option.value = option.textContent = time;
+// 				endSelect.appendChild(option);
+// 			}
+// 		}
+// 	}
 
-	const emptyOption = document.createElement('option');
-	emptyOption.value = '';
-	emptyOption.textContent = '';
-	startSelect.appendChild(emptyOption);
+// 	if (currentEnd > selectedStart) {
+// 		endSelect.value = currentEnd;
+// 	}
+// });
 
-	for (let h = 7; h <= 22; h++) {
-		for (let m of [0, 30]) {
-			const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-			if (time < selectedEnd) {
-				const option = document.createElement('option');
-				option.value = option.textContent = time;
-				startSelect.appendChild(option);
-			}
-		}
-	}
+// document.getElementById('end_time').addEventListener('change', function () {
+// 	const selectedEnd = this.value;
+// 	const startSelect = document.getElementById('start_time');
+// 	const currentStart = startSelect.value;
 
-	if (currentStart < selectedEnd) {
-		startSelect.value = currentStart;
-	}
-});
+// 	startSelect.innerHTML = '';
+
+// 	const emptyOption = document.createElement('option');
+// 	emptyOption.value = '';
+// 	emptyOption.textContent = '';
+// 	startSelect.appendChild(emptyOption);
+
+// 	for (let h = 7; h <= 22; h++) {
+// 		for (let m of [0, 30]) {
+// 			const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+// 			if (time < selectedEnd) {
+// 				const option = document.createElement('option');
+// 				option.value = option.textContent = time;
+// 				startSelect.appendChild(option);
+// 			}
+// 		}
+// 	}
+
+// 	if (currentStart < selectedEnd) {
+// 		startSelect.value = currentStart;
+// 	}
+// });
+// 
+
+
 
 async function reserve() {
 	const reserveBtn = document.getElementById('reserveBtn');

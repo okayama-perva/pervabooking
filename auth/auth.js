@@ -57,7 +57,7 @@ function register() {
       .then(() => {
         const expireAt = Date.now() + 3 * 24 * 60 * 60 * 1000;
         localStorage.setItem('authExpireAt', expireAt);
-        window.location.href = '/index.html';
+        window.location.href = '/perva_booking/index.html';
       })
       .catch((err) => {
         alert('ログイン失敗：メールアドレス・パスワードを確認してください');

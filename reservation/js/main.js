@@ -13,9 +13,6 @@ auth.onAuthStateChanged((user) => {
 		if (document.getElementById('list-date')) {
 			document.getElementById('list-date').value = today;
 		}
-		// if (typeof generateTimeOptions === 'function') {
-		// 	generateTimeOptions();
-		// }削除予定
 		if (typeof renderRoomWiseList === 'function') {
 			renderRoomWiseList(today);
 		}

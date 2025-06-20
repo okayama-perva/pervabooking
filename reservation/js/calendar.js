@@ -13,6 +13,19 @@ window.addEventListener('load', () => {
 	});
 });
 
+// flatpickr("#list-date", {
+// 	dateFormat: "Y-m-d",
+// 	defaultDate: "today",
+// 	minDate: "today",
+// 	onChange: function (selectedDates, dateStr) {
+// 		const room = document.getElementById('room').value;
+// 		loadReservedRanges(room, dateStr); // ← ここ追加
+// 		renderRoomWiseList(dateStr);
+// 		document.getElementById('list-date').value = dateStr;
+// 	},
+// });
+
+
 // 📅 カレンダー1：予約一覧表示用（#list-date）
 window.addEventListener('load', () => {
 	flatpickr('#date', {

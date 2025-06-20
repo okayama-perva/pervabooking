@@ -1,3 +1,4 @@
+// 予約済みの時間を保持するグローバル関数
 let reservedRanges = [];
 
 function parseTimeToFloat(timeStr) {
@@ -88,14 +89,3 @@ $(document).ready(function () {
 });
 
 
-flatpickr("#list-date", {
-	dateFormat: "Y-m-d",
-	defaultDate: "today",
-	minDate: "today",
-	onChange: function (selectedDates, dateStr) {
-		const room = document.getElementById('room').value;
-		loadReservedRanges(room, dateStr); // ← ここ追加
-		renderRoomWiseList(dateStr);
-		document.getElementById('list-date').value = dateStr;
-	},
-});

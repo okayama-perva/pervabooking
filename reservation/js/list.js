@@ -6,7 +6,7 @@ window.addEventListener('load', () => {
 	const today = new Date().toISOString().split('T')[0];
 	document.getElementById('list-date').value = today;
 	renderRoomWiseList(today);
-	setupClickListeners();
+	// setupClickListeners();
 });
 function renderRoomWiseList(dateStr) {
 	document.getElementById('list-date').value = dateStr;
@@ -89,12 +89,17 @@ function renderRoomWiseList(dateStr) {
 								to,
 							});
 
-							// ✅ start_time, end_time にも反映（保険）
-							document.getElementById('start_time').value = from;
+							// ✅ from = 7.0, 7.5, 8.0 ... を "HH:MM" に変換
+							const startHour = Math.floor(from);
+							const startMinute = from % 1 === 0.5 ? '30' : '00';
+							const startTimeStr = `${String(startHour).padStart(2, '0')}:${startMinute}`;
+							document.getElementById('start_time').value = startTimeStr;
+
+							// ✅ end_time も同様に変換
 							const endHour = Math.floor(to);
 							const endMinute = to % 1 === 0.5 ? '30' : '00';
-							document.getElementById('end_time').value = `${String(endHour).padStart(2, '0')}:${endMinute}`;
-
+							const endTimeStr = `${String(endHour).padStart(2, '0')}:${endMinute}`;
+							document.getElementById('end_time').value = endTimeStr;
 
 							// 🔹メモ欄を初期化
 							// document.getElementById('memo').value = '';
@@ -288,39 +293,40 @@ function renderReservationItem(res, roomKey, uid) {
 	ul.appendChild(li);
 }
 
-function setupClickListeners() {
-	['room1', 'room2', 'room3'].forEach((roomKey) => {
-		const ul = document.getElementById(`list-room-${roomKey}`);
-		if (!ul) return;
+// function setupClickListeners() {
+// 	['room1', 'room2', 'room3'].forEach((roomKey) => {
+// 		const ul = document.getElementById(`list-room-${roomKey}`);
+// 		if (!ul) return;
 
-		ul.addEventListener('click', (e) => {
-			const rect = ul.getBoundingClientRect();
-			const offsetY = e.clientY - rect.top;
+// 		ul.addEventListener('click', (e) => {
+// 			const rect = ul.getBoundingClientRect();
+// 			const offsetY = e.clientY - rect.top;
 
-			const hourFloat = 7 + offsetY / 84;
-			const hour = Math.floor(hourFloat);
-			const minute = hourFloat % 1 >= 0.5 ? 30 : 0;
-			const timeStr = `${String(hour).padStart(2, '0')}:${minute === 0 ? '00' : '30'}`;
+// 			const hourFloat = 7 + offsetY / 84;
+// 			const hour = Math.floor(hourFloat);
+// 			const minute = hourFloat % 1 >= 0.5 ? 30 : 0;
+// 			const timeStr = `${String(hour).padStart(2, '0')}:${minute === 0 ? '00' : '30'}`;
 
-			// 🔻 ここはあなたのフォームIDに置き換えてください
-			document.getElementById('room').value = roomKey;
-			document.getElementById('start_time').value = timeStr;
-		});
-	});
-}
-function onEmptyCellClick(roomKey, timeStr) {
-	document.getElementById('room').value = roomKey;
-	document.getElementById('start_time').value = timeStr;
+// 			// 🔻 ここはあなたのフォームIDに置き換えてください
+// 			document.getElementById('room').value = roomKey;
+// 			document.getElementById('start_time').value = timeStr;
+// 		});
+// 	});
+// }
+// function onEmptyCellClick(roomKey, timeStr) {
+// 	document.getElementById('room').value = roomKey;
+// 	document.getElementById('start_time').value = timeStr;
+// 	console.log(`部屋: ${roomKey}、開始時間: ${timeStr} に設定しました`);
 
-	// 🔧 先に hour と minute を定義
-	const [hour, minute] = timeStr.split(':').map(Number);
-	const endHour = hour + 1;
-	const endTimeStr = `${String(endHour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-	document.getElementById('end_time').value = endTimeStr;
+// 	// 🔧 先に hour と minute を定義
+// 	const [hour, minute] = timeStr.split(':').map(Number);
+// 	const endHour = hour + 1;
+// 	const endTimeStr = `${String(endHour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+// 	document.getElementById('end_time').value = endTimeStr;
 
-	// 🔁 スライダーにも反映
-	const slider = document.getElementById('time-slider')?.noUiSlider;
-	if (slider) {
-		slider.set([hour, endHour]);
-	}
-}
+// 	// 🔁 スライダーにも反映
+// 	const slider = document.getElementById('time-slider')?.noUiSlider;
+// 	if (slider) {
+// 		slider.set([hour, endHour]);
+// 	}
+// }

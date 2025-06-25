@@ -11,9 +11,9 @@
 		<!-- ファビコン -->
 		<link rel="icon" href="../favicon.ico" type="image/x-icon" />
 		<!-- Firebaseの設定 -->
-		<script src="../common/init.js"></script>
+		<script src="/common/init.js"></script>
 		<!-- 認証ガード -->
-		<script src="../common/authGuard.js"></script>
+		<script src="/common/authGuard.js"></script>
 
 		<!-- カレンダーのライブラリ -->
 		<!-- Flatpickr CSS -->
@@ -42,7 +42,7 @@
 		<!-- カスタムスタイル -->
 		<link rel="stylesheet" href="css/style.css" />
 	</head>
-	
+
 	<body class="bg-gray-100 p-8">
 		<!-- 🔐 ログイン後の画面全体 -->
 		<div id="appSection" class="relative bg-gray-100">
@@ -248,9 +248,17 @@
 			>
 				📘 使い方・アップデート説明ページへ
 			</a>
+			<div class="mt-4">
+				<button
+					id="deleteOldBtn"
+					onclick="deleteOldReservationsWithLog()"
+					class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+				>
+					🗑️ 先週以前の予約削除
+				</button>
+			</div>
 		</footer>
 
-		
 		<!-- 🔽 定例MTG登録モーダル（HTML例） // ※ ボタン等に追加して表示制御する想定 -->
 		<div id="repeatModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
 			<div class="bg-white p-6 rounded shadow w-full max-w-md">

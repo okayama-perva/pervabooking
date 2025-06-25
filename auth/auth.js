@@ -35,7 +35,7 @@ function register() {
       alert('登録完了！ログインしてください。');
       registerBtn.disabled = false;
       registerBtn.innerText = originalText;
-      window.location.href = '/auth/login.html';
+      window.location.href = '/perva_booking/auth/login.html';
     })
     .catch((err) => {
       alert('登録失敗しました。登録済みでは？ログインとして再試行してください');

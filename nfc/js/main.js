@@ -27,7 +27,7 @@
 	const endStr = formatDateTime(end);
 
 	// ✅ GAS URL（カレンダー連携用）
-	const GAS_URL = 'https://script.google.com/macros/s/【あなたのGAS URL】/exec';
+	const GAS_URL = 'https://script.google.com/macros/s/AKfycbztij-4sW0g3LiVS0q0A9z7DUFBp5iTF6bRJyYtzt-26DLnIkNJ7ySx0wBDu4nQZrh_Vg/exec';
 
 	try {
 		// 🔍 重複チェック

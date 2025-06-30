@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>今すぐ予約</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+
+  <!-- Firebase初期化 -->
+  <script src="../common/init.js"></script>
+
+  <!-- NFC予約処理 -->
+  <script defer src="./js/main.js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="text-center p-6 bg-white rounded shadow-lg">
+    <h1 class="text-2xl font-bold mb-4">🚀 今すぐ予約を処理中...</h1>
+    <p id="message" class="text-gray-700">しばらくお待ちください...</p>
+  </div>
+</body>
+</html>

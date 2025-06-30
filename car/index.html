@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>🚗 車予約システム</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+        <!-- Firebaseの設定 -->
+		<script src="../common/init.js"></script>
+		<!-- 認証ガード -->
+		<script src="../common/authGuard.js"></script>
+        <script>
+			auth.onAuthStateChanged((user) => {
+				if (user) {
+					const uid = user.uid;
+					db.collection('users')
+						.doc(uid)
+						.get()
+						.then((doc) => {
+							if (doc.exists) {
+								const username = doc.data().username;
+								document.getElementById('welcomeName').textContent = username;
+							} else {
+								document.getElementById('welcomeName').textContent = 'ユーザー';
+							}
+						})
+						.catch((error) => {
+							console.error('ユーザー名の取得に失敗:', error);
+							document.getElementById('welcomeName').textContent = 'エラー';
+						});
+				}
+			});
+		</script>
+	</head>
+	<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-start p-4">
+		<h1 class="text-xl font-bold text-center mb-4">🚗 車予約システム</h1>
+		<div class="text-sm text-gray-600 text-center mb-6">
+			ログイン中：<span id="welcomeName" class="font-bold">...</span>
+		</div>
+
+		<!-- 予約フォーム -->
+		<form id="reservationForm" class="w-full max-w-md bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+			<div class="mb-4">
+				<label class="block text-gray-700 text-sm font-bold mb-2" for="car">車両</label>
+				<select
+					id="car"
+					class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight"
+				>
+					<option value="car1">🚗 Car 1</option>
+				</select>
+			</div>
+			<div class="mb-4">
+				<label class="block text-gray-700 text-sm font-bold mb-2" for="date">日付</label>
+				<input
+					type="date"
+					id="date"
+					class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+					required
+				/>
+			</div>
+			<div class="mb-4">
+				<label class="block text-gray-700 text-sm font-bold mb-2" for="start">開始時間</label>
+				<input
+					type="time"
+					id="start"
+					class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+					required
+				/>
+			</div>
+			<div class="mb-4">
+				<label class="block text-gray-700 text-sm font-bold mb-2" for="end">終了時間</label>
+				<input
+					type="time"
+					id="end"
+					class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+					required
+				/>
+			</div>
+			<div class="mb-4">
+				<label class="block text-gray-700 text-sm font-bold mb-2" for="title">目的（タイトル）</label>
+				<input
+					type="text"
+					id="title"
+					placeholder="例：内見"
+					class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+					required
+				/>
+			</div>
+			<div class="mb-4">
+				<label class="block text-gray-700 text-sm font-bold mb-2" for="memo">メモ（任意）</label>
+				<textarea
+					id="memo"
+					rows="2"
+					class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+				></textarea>
+			</div>
+			<button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full">
+				🚀 予約する
+			</button>
+		</form>
+
+		
+	</body>
+</html>

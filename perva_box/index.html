@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<title>お菓子いいね投票システム</title>
+		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+		<script src="../common/init.js"></script>
+		<script src="../common/authGuard.js"></script>
+
+		<script src="https://cdn.tailwindcss.com"></script>
+	</head>
+	<body class="bg-pink-50 min-h-screen flex flex-col items-center p-6">
+		<h1 class="text-3xl font-bold text-pink-600 mb-6">🍬 お菓子いいね投票システム</h1>
+
+		<div class="w-full max-w-md bg-white p-6 rounded-xl shadow-md mb-8">
+			<h2 class="text-xl font-semibold mb-4 text-pink-700">お菓子を登録</h2>
+			<form id="snackForm" class="flex flex-col space-y-3">
+				<input
+					type="text"
+					id="name"
+					placeholder="お菓子の名前（必須）"
+					required
+					class="border border-pink-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
+				/>
+
+				<input type="file" id="image" accept="image/*" class="text-sm" />
+
+				<input
+					type="url"
+					id="link"
+					placeholder="商品ページのリンク（任意）"
+					class="border border-pink-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
+				/>
+
+				<button type="submit" class="bg-pink-400 text-white py-2 rounded hover:bg-pink-500 transition">
+					登録する
+				</button>
+			</form>
+		</div>
+
+		<div class="w-full max-w-3xl">
+			<h2 class="text-2xl font-bold mb-4 text-pink-600">🍭 お菓子一覧</h2>
+			<div id="snackList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+		</div>
+
+		<script src="./js/main.js"></script>
+	</body>
+</html>

@@ -1,7 +1,7 @@
 (async function () {
 	const params = new URLSearchParams(location.search);
 	const room = params.get('room') || 'room1';
-	const username = 'NFCユーザー';
+	const username = 'NFC';
 	const type = '即時';
 
 	const message = document.getElementById('message');
@@ -60,7 +60,7 @@
 		let eventId = null;
 		const formData = new URLSearchParams();
 		formData.append('summary', `${roomName}｜${type}｜${username}`);
-		formData.append('description', 'NFC即時予約（メモなし）');
+		formData.append('description', 'NFC即時予約');
 		formData.append('start', `${date}T${startTime}:00+09:00`);
 		formData.append('end', `${date}T${endTime}:00+09:00`);
 		formData.append('location', roomName);

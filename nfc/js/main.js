@@ -41,12 +41,9 @@
 
 	try {
 		// 🔍 重複チェック
-		const snapshot = await db.collection('reservations')
-			.where('room', '==', room)
-			.where('date', '==', date)
-			.get();
+		const snapshot = await db.collection('reservations').where('room', '==', room).where('date', '==', date).get();
 
-		const hasConflict = snapshot.docs.some(doc => {
+		const hasConflict = snapshot.docs.some((doc) => {
 			const d = doc.data();
 			return !(endTime <= d.start.slice(11, 16) || startTime >= d.end.slice(11, 16));
 		});
@@ -67,13 +64,16 @@
 		formData.append('colorId', colorId);
 
 		try {
-			const res = await fetch('https://script.google.com/macros/s/AKfycbztij-4sW0g3LiVS0q0A9z7DUFBp5iTF6bRJyYtzt-26DLnIkNJ7ySx0wBDu4nQZrh_Vg/exec', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded',
-				},
-				body: formData,
-			});
+			const res = await fetch(
+				'https://script.google.com/macros/s/AKfycbztij-4sW0g3LiVS0q0A9z7DUFBp5iTF6bRJyYtzt-26DLnIkNJ7ySx0wBDu4nQZrh_Vg/exec',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+					},
+					body: formData,
+				}
+			);
 
 			const data = await res.json();
 			if (data.status === 'success') {
@@ -83,11 +83,30 @@
 			}
 		} catch (err) {
 			console.warn('⚠️ Googleカレンダー登録失敗:', err);
+			// ⚠️ Googleカレンダー登録失敗でも予約は保存
+			await db.collection('nfc_errlog').add({
+				createdAt: new Date(),
+				uid: '',
+				username: username,
+				type: type,
+				room: room,
+				date: date,
+				start: `${date} ${startTime}`,
+				end: `${date} ${endTime}`,
+				memo: '',
+				eventId: '', // 失敗なので空
+				colorId: colorId,
+				source: 'nfc',
+				accessLog: {
+					userAgent: navigator.userAgent,
+					accessedAt: new Date(),
+					calendarError: err.message,
+				},
+			});
 			message.textContent = '⚠️ Googleカレンダーへの登録に失敗しました。';
 			return;
 		}
 
-		// 🔄 Firestoreに予約保存
 		await db.collection('reservations').add({
 			createdAt: new Date(),
 			uid: '',
@@ -100,7 +119,12 @@
 			memo: '',
 			eventId: eventId,
 			colorId: colorId,
-			source: 'nfc'
+			source: 'nfc',
+			accessLog: {
+				userAgent: navigator.userAgent,
+				referrer: document.referrer || '',
+				accessedAt: new Date(),
+			},
 		});
 
 		message.textContent = `✅ ${startTime}〜${endTime} を予約しました`;

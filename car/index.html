@@ -8,65 +8,51 @@
 		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-        <!-- Firebaseの設定 -->
+		<!-- Firebaseの設定 -->
 		<script src="../common/init.js"></script>
 		<!-- 認証ガード -->
 		<script src="../common/authGuard.js"></script>
-        <script>
-			auth.onAuthStateChanged((user) => {
-				if (user) {
-					const uid = user.uid;
-					db.collection('users')
-						.doc(uid)
-						.get()
-						.then((doc) => {
-							if (doc.exists) {
-								const username = doc.data().username;
-								document.getElementById('welcomeName').textContent = username;
-							} else {
-								document.getElementById('welcomeName').textContent = 'ユーザー';
-							}
-						})
-						.catch((error) => {
-							console.error('ユーザー名の取得に失敗:', error);
-							document.getElementById('welcomeName').textContent = 'エラー';
-						});
-				}
-			});
+
+		<!-- ログアウトボタン -->
+		<script defer>
+			function logout() {
+				auth.signOut().then(() => {
+					localStorage.removeItem('authExpireAt');
+					window.location.href = './auth/login.html';
+				});
+			}
 		</script>
 	</head>
-	<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-start p-4">
-		<h1 class="text-xl font-bold text-center mb-4">🚗 車予約システム</h1>
-		<div class="text-sm text-gray-600 text-center mb-6">
-			ログイン中：<span id="welcomeName" class="font-bold">...</span>
+	<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+		<div class="flex flex-col md:flex-row justify-between items-center mb-6 w-full max-w-xl">
+			<h1 class="text-2xl font-bold mb-2 md:mb-0">車予約システム</h1>
+			<div class="flex space-x-4">
+				<a href="/index.html" class="text-sm text-gray-700 underline hover:text-blue-600">トップページへ</a>
+				<button onclick="logout()" class="text-sm text-blue-600 underline">ログアウト</button>
+			</div>
 		</div>
 
 		<!-- 予約フォーム -->
-		<form id="reservationForm" class="w-full max-w-md bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+		<form id="reservationForm" class="w-full max-w-lg bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
 			<div class="mb-4">
 				<label class="block text-gray-700 text-sm font-bold mb-2" for="car">車両</label>
-				<select
-					id="car"
-					class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight"
-				>
-					<option value="car1">🚗 Car 1</option>
+				<select id="car" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight">
+					<option value="シエンタ">シエンタ</option>
 				</select>
 			</div>
 			<div class="mb-4">
 				<label class="block text-gray-700 text-sm font-bold mb-2" for="date">日付</label>
-				<input
-					type="date"
-					id="date"
-					class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
-					required
-				/>
+				<input type="date" id="date" class="shadow border rounded w-full py-2 px-3 text-gray-700" required />
 			</div>
 			<div class="mb-4">
 				<label class="block text-gray-700 text-sm font-bold mb-2" for="start">開始時間</label>
 				<input
 					type="time"
 					id="start"
-					class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+					class="shadow border rounded w-full py-2 px-3 text-gray-700"
+					min="08:00"
+					max="22:00"
+					step="900"
 					required
 				/>
 			</div>
@@ -75,33 +61,38 @@
 				<input
 					type="time"
 					id="end"
-					class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
-					required
-				/>
-			</div>
-			<div class="mb-4">
-				<label class="block text-gray-700 text-sm font-bold mb-2" for="title">目的（タイトル）</label>
-				<input
-					type="text"
-					id="title"
-					placeholder="例：内見"
-					class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+					class="shadow border rounded w-full py-2 px-3 text-gray-700"
+					min="08:00"
+					max="22:00"
+					step="900"
 					required
 				/>
 			</div>
 			<div class="mb-4">
 				<label class="block text-gray-700 text-sm font-bold mb-2" for="memo">メモ（任意）</label>
-				<textarea
-					id="memo"
-					rows="2"
-					class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
-				></textarea>
+				<textarea id="memo" rows="2" class="shadow border rounded w-full py-2 px-3 text-gray-700"></textarea>
 			</div>
 			<button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full">
 				🚀 予約する
 			</button>
 		</form>
-
-		
+		<div class="relative w-full bg-white shadow-md rounded p-6">
+			<div class="flex space-x-4 mb-6">
+				<input type="date" id="selectedDate" class="border px-2 py-1 rounded" />
+				<select id="selectedCar" class="border px-2 py-1 rounded">
+					<option value="シエンタ">シエンタ</option>
+					<option value="ヴォクシー">ヴォクシー</option>
+					<option value="アルファード">アルファード</option>
+				</select>
+				<button id="searchBtn" class="bg-blue-600 text-white px-4 py-1 rounded">検索</button>
+			</div>
+			<div class="relative w-full h-32 rounded overflow-x-auto mt-5">
+				<div id="timeline" class="flex items-center h-[50px] w-max mt-10"></div>
+				<div id="cars" class="absolute top-6 left-0 text-4xl">🚗</div>
+			</div>
+		</div>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+		<script type="module" src="js/main.js"></script>
+		<script src="js/car_listanime.js"></script>
 	</body>
 </html>

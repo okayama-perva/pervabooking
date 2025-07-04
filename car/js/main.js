@@ -32,13 +32,14 @@ form.addEventListener('submit', async (e) => {
 		return;
 	}
 	// 時間のフォーマットチェック
-	if (!isValidTime(start) || !isValidTime(end)) {
-		alert('時間は8:00～22:00の15分単位で選択してください。');
-		isSubmitting = false;
-		submitBtn.disabled = false;
-		submitBtn.textContent = '🚀 予約する';
-		return;
-	}
+    if (!isValidTime(starttime) || !isValidTime(endtime)) {
+        alert('時間は8:00～22:00の15分単位で選択してください。');
+        isSubmitting = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🚀 予約する';
+        return;
+    }
+// ...existing code...
 	// nullなら待つ
 	let user = auth.currentUser;
 	if (!user) {

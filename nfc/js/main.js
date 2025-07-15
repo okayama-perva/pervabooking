@@ -17,6 +17,12 @@
 	const formatTime = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 	const formatISO = (d) => `${formatDate(d)}T${formatTime(d)}:00+09:00`;
 
+	// ✅ Firestoreの日時文字列をDateに変換
+	const parseDateTime = (str) => {
+		const [datePart, timePart] = str.split(' ');
+		return new Date(`${datePart}T${timePart}:00+09:00`);
+	};
+
 	const now = new Date();
 	const rounded = new Date(now);
 	const minutes = now.getMinutes();
@@ -31,7 +37,7 @@
 	const endTime = formatTime(endDate);
 
 	try {
-		// まず今日の同じroom・usernameの予約を探す
+		// 🔍 今日の同じroom・usernameの予約を探す
 		const snapshot = await db
 			.collection('reservations')
 			.where('room', '==', room)
@@ -42,14 +48,14 @@
 		let existing = null;
 		snapshot.forEach((doc) => {
 			const data = doc.data();
-			if (!existing || data.end > existing.end) {
+			if (!existing || parseDateTime(data.end) > parseDateTime(existing.end)) {
 				existing = { id: doc.id, ...data };
 			}
 		});
 
 		if (existing) {
 			// 🔍 延長したい終了時間を計算
-			const newEndTime = new Date(new Date(existing.end).getTime() + 60 * 60 * 1000);
+			const newEndTime = new Date(parseDateTime(existing.end).getTime() + 60 * 60 * 1000);
 			const newEndStr = `${date} ${formatTime(newEndTime)}`;
 
 			// 🔍 他の予約と衝突がないか確認
@@ -78,14 +84,22 @@
 					formData.append('eventId', existing.eventId);
 					formData.append('newEnd', formatISO(newEndTime));
 					formData.append('action', 'extend');
+					console.log('=== Googleカレンダー延長 payload ===');
+					console.log('eventId:', existing.eventId);
+					console.log('newEnd:', formatISO(newEndTime));
+					console.log('action:', 'extend');
 
-					const res = await fetch('https://script.google.com/macros/s/AKfycbztij-4sW0g3LiVS0q0A9z7DUFBp5iTF6bRJyYtzt-26DLnIkNJ7ySx0wBDu4nQZrh_Vg/exec', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-						body: formData,
-					});
+					const res = await fetch(
+						'https://script.google.com/macros/s/AKfycbwEl2qhnBPavks2-5W_jfKnQPcHWH9jZEsS7KnFt54XC6b_2W6KUkZuW7odpUo-Mu9A7w/exec',
+						{
+							method: 'POST',
+							headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+							body: formData,
+						}
+					);
 
 					const data = await res.json();
+					console.log("GASからの返答:", data);
 					if (data.status === 'success') {
 						updated = true;
 					}
@@ -137,11 +151,14 @@
 				formData.append('location', roomName);
 				formData.append('colorId', colorId);
 
-				const res = await fetch('https://script.google.com/macros/s/AKfycbztij-4sW0g3LiVS0q0A9z7DUFBp5iTF6bRJyYtzt-26DLnIkNJ7ySx0wBDu4nQZrh_Vg/exec', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-					body: formData,
-				});
+				const res = await fetch(
+					'https://script.google.com/macros/s/AKfycbwEl2qhnBPavks2-5W_jfKnQPcHWH9jZEsS7KnFt54XC6b_2W6KUkZuW7odpUo-Mu9A7w/exec',
+					{
+						method: 'POST',
+						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+						body: formData,
+					}
+				);
 
 				const data = await res.json();
 				if (data.status === 'success') {

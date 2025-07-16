@@ -55,7 +55,7 @@ function register() {
 
     auth.signInWithEmailAndPassword(email, password)
       .then(() => {
-        const expireAt = Date.now() + 3 * 24 * 60 * 60 * 1000;
+        const expireAt = Date.now() + 2 * 24 * 60 * 60 * 1000;
         localStorage.setItem('authExpireAt', expireAt);
         window.location.href = '/perva_booking/index.html';
       })

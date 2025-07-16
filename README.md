@@ -2,7 +2,7 @@
 ## 改善点
 - 予約内容の更新
 - 定例予約は色固定で配置か目印が欲しい
-
+- ログイン接続切れた時のリダイレクトが間違えている
 ## 今後作るもの
 - 車の予約・何日何時・メモ そのうち 
     - createdAt,eventId,car,user,data,starttime,endtime,memo

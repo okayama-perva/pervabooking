@@ -64,19 +64,26 @@
 				.collection('reservations')
 				.where('room', '==', room)
 				.where('date', '==', date)
-				.where('source', '==', 'nfc') // これを追加
 				.get();
+
+			const existingStart = parseDateTime(existing.start);
 
 			const conflict = otherSnapshot.docs.some((doc) => {
 				const d = doc.data();
 				if (doc.id === existing.id) return false;
-				return !(newEndStr <= d.start || existing.start >= d.end);
+
+				const otherStart = parseDateTime(d.start);
+				const otherEnd = parseDateTime(d.end);
+
+				return existingStart < otherEnd && newEndTime > otherStart;
 			});
+
 
 			if (conflict) {
 				message.textContent = '❌ これ以上延長できません。他の予約と重なります。';
 				return;
 			}
+
 
 			// 📅 Googleカレンダー更新
 			let updated = false;

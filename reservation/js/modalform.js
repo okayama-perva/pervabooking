@@ -228,7 +228,7 @@ async function registerGoogleCalendarEvent({ room, username, type, start, end, d
 
 	try {
 		const res = await fetch(
-			'https://script.google.com/macros/s/AKfycbwmG-VtaC9ZThK-RIr0U8y35_CQyNKAP8RHkY5tKACo3xZjuRb0hPvx43Hg0WpABY-n8g/exec',
+			'https://script.google.com/macros/s/AKfycbxBkBNGAtYkXxjcQftVzzo9HjoEWPnXoGFCbSMypi7cLKGbCZk6BnNiU8XVVl0ADviPKw/exec',
 			{
 				method: 'POST',
 				headers: {
@@ -319,7 +319,7 @@ async function deleteRepeatGroup(groupId, btnElement) {
         form.append("eventId", data.eventId);
         form.append("action", "delete");
         await fetch(
-          "https://script.google.com/macros/s/AKfycbwnkIPQyhamSHVxQFc1AlKtQ9Z-jnSArZoGmR52idARY1eOYPjPef3iBHMhxxzwEnt4rA/exec",
+          "https://script.google.com/macros/s/AKfycbxBkBNGAtYkXxjcQftVzzo9HjoEWPnXoGFCbSMypi7cLKGbCZk6BnNiU8XVVl0ADviPKw/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },

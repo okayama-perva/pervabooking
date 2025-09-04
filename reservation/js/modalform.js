@@ -218,13 +218,19 @@ async function registerGoogleCalendarEvent({ room, username, type, start, end, d
 		room3: '商談室',
 	};
 	const roomName = roomNames[room] || room;
-
+	const roomColorMap = {
+		room1: '9', // 青
+		room2: '10', // 緑
+		room3: '3', // 紫
+	};
+	const colorId = roomColorMap[room] || '9';
 	const formData = new URLSearchParams();
 	formData.append('summary', `${roomName}｜${type}｜${username}`);
 	formData.append('description', memo || '（メモなし）');
 	formData.append('start', `${date}T${start.split(' ')[1]}:00+09:00`);
 	formData.append('end', `${date}T${end.split(' ')[1]}:00+09:00`);
 	formData.append('location', roomName);
+	formData.append('colorId', colorId);
 
 	try {
 		const res = await fetch(

@@ -9,6 +9,8 @@ document.getElementById('reservationForm').addEventListener('submit', async (e) 
    const memo = document.getElementById('memo').value;
    const multiDay = multiDayToggle.checked;
 
+   console.log(startDate, endDate, startTime, endTime, car, memo, multiDay);
+
    // 🔒 バリデーション
    if (multiDay) {
       // 複数日予約
@@ -40,10 +42,9 @@ document.getElementById('reservationForm').addEventListener('submit', async (e) 
    }
    // 🔥 Firestoreへ登録する例（要firebase初期化）
    try {
-      const start = new Date(startDate.value);
-      const end = new Date(endDate.value);
+      const start = new Date(startDate);
+      const end = new Date(endDate);
       const dateList = [];
-
       for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
          dateList.push(new Date(d));
       }
@@ -81,8 +82,9 @@ document.getElementById('reservationForm').addEventListener('submit', async (e) 
       let reservations = [];
 
       if (multiDay) {
-         const start = new Date(startDate.value);
-         const end = new Date(endDate.value);
+         console.log('複数日予約処理');
+         const start = new Date(startDate);
+         const end = new Date(endDate);
          const dateList = [];
 
          for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
@@ -93,8 +95,41 @@ document.getElementById('reservationForm').addEventListener('submit', async (e) 
             const dateObj = dateList[i];
             const dateStr = dateObj.toISOString().slice(0, 10);
 
-            const sTime = i === 0 ? startTime : '00:00';
-            const eTime = i === dateList.length - 1 ? endTime : '24:00';
+            let sTime, eTime;
+
+            if (!isOvernight) {
+               // 🔹 通常パターン（例: 10:00〜17:00）
+               if (i === 0 && i === dateList.length - 1) {
+                  // 初日＝最終日（1日だけ）
+                  sTime = startTime;
+                  eTime = endTime;
+               } else if (i === 0) {
+                  sTime = startTime;
+                  eTime = '24:00';
+               } else if (i === dateList.length - 1) {
+                  sTime = '00:00';
+                  eTime = endTime;
+               } else {
+                  sTime = '00:00';
+                  eTime = '24:00';
+               }
+            } else {
+               // 🔹 跨ぐパターン（例: 22:00〜06:00）
+               if (i === 0) {
+                  sTime = startTime;
+                  eTime = '24:00';
+               } else if (i === 1 && dateList.length === 2) {
+                  // 2日だけのとき（特殊）
+                  sTime = '00:00';
+                  eTime = endTime;
+               } else if (i === dateList.length - 1) {
+                  sTime = '00:00';
+                  eTime = endTime;
+               } else {
+                  sTime = '00:00';
+                  eTime = '24:00';
+               }
+            }
 
             // 🔄 Googleカレンダーに登録
             const params = new URLSearchParams({
@@ -132,7 +167,8 @@ document.getElementById('reservationForm').addEventListener('submit', async (e) 
             }
          }
       } else {
-         const dateStr = startDate.value;
+         const dateStr = startDate;
+         console.log(car + dateStr + startTime + endTime);
 
          const snapshot = await db
             .collection('car_reservations')

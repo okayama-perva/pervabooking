@@ -75,11 +75,11 @@ function validateDates() {
    }
 }
 function generateTimeOptions(selectElement, defaultTime) {
-   const startHour = 8;
+   const startHour = 6;
    const endHour = 22;
 
    for (let hour = startHour; hour <= endHour; hour++) {
-      for (let minute of [0, 15, 30, 45]) {
+      for (let minute of [0, 30]) {
          if (hour === endHour && minute > 0) break;
 
          const h = String(hour).padStart(2, '0');

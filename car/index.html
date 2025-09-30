@@ -107,170 +107,31 @@
 
       <h2>🚗 車予約タイムライン（月単位表示）</h2>
 
-      <div id="monthTabs">
-         <button data-year="2025" data-month="9">2025年9月</button>
-         <button data-year="2025" data-month="10">2025年10月</button>
-         <button data-year="2025" data-month="11">2025年11月</button>
+      <div class="flex gap-2 mb-4">
+         <select id="yearSelect" class="border rounded px-2 py-1"></select>
+
+         <select id="monthSelect" class="border rounded px-2 py-1">
+            <option value="1">1月</option>
+            <option value="2">2月</option>
+            <option value="3">3月</option>
+            <option value="4">4月</option>
+            <option value="5">5月</option>
+            <option value="6">6月</option>
+            <option value="7">7月</option>
+            <option value="8">8月</option>
+            <option value="9">9月</option>
+            <option value="10">10月</option>
+            <option value="11">11月</option>
+            <option value="12">12月</option>
+         </select>
       </div>
-      <div id="timelineWrapper">
+      
          <div id="timeline"></div>
-      </div>
-      <script>
-         const container = document.getElementById('timeline');
+      
 
-         // ✅ サンプルデータ
-         const sampleData = [
-            {
-               id: 1,
-               date: '2025-09-04',
-               start: '2025-09-04T00:30:00',
-               end: '2025-09-04T02:15:00',
-               car: 'シエンタ',
-               user: '内山',
-            },
-            {
-               id: 2,
-               date: '2025-09-07',
-               start: '2025-09-07T09:00:00',
-               end: '2025-09-07T11:45:00',
-               car: 'ヤリス',
-               user: '岡山',
-            },
-            {
-               id: 3,
-               date: '2025-09-12',
-               start: '2025-09-12T22:30:00',
-               end: '2025-09-13T01:00:00',
-               car: 'プリウス',
-               user: '古舘',
-            },
-         ];
-
-         function getMonthDates(year, month) {
-            const dates = [];
-            const date = new Date(year, month - 1, 1);
-            while (date.getMonth() === month - 1) {
-               const iso = date.toISOString().slice(0, 10);
-               dates.push({
-                  id: iso,
-                  content: new Date(iso).toLocaleDateString('ja-JP', {
-                     month: 'short',
-                     day: 'numeric',
-                     weekday: 'short',
-                  }),
-               });
-               date.setDate(date.getDate() + 1);
-            }
-            return dates;
-         }
-
-         function fixMajorLabelText(year, month) {
-            const target = document.getElementById('timeline');
-            const labelText = `${year}年${month}月`;
-
-            const updateLabels = () => {
-               document.querySelectorAll('.vis-text.vis-major').forEach((el) => {
-                  el.innerHTML = `<div>${labelText}</div>`;
-               });
-            };
-
-            // 最初に一度適用
-            updateLabels();
-
-            const observer = new MutationObserver((mutationsList, observer) => {
-               for (const mutation of mutationsList) {
-                  if (mutation.type === 'childList') {
-                     updateLabels(); // ラベルが再描画されたら再適用
-                  }
-               }
-            });
-
-            observer.observe(target, {
-               childList: true,
-               subtree: true,
-            });
-
-            // 🔁 一定時間後に observer を停止（無限監視防止）
-            setTimeout(() => observer.disconnect(), 3000); // 最大3秒だけ監視
-         }
-
-         let timeline = null; // 🔄 タイムラインのインスタンスを使い回す
-
-         function drawTimeline(year, month) {
-            const groups = new vis.DataSet(getMonthDates(year, month));
-
-            const items = new vis.DataSet(
-               sampleData
-                  .filter((item) => {
-                     const d = new Date(item.date);
-                     return d.getFullYear() === year && d.getMonth() + 1 === month;
-                  })
-                  .map((item) => ({
-                     id: item.id,
-                     group: item.date,
-                     start: item.start,
-                     end: item.end,
-                     content: `🚗 ${item.car}<br>👤 ${item.user} <button class="cancelBtn" onclick="cancelItem(${item.id})">❌</button>`,
-                     className: 'custom-item',
-                  }))
-            );
-
-            const options = {
-               groupOrder: 'id',
-               orientation: 'top',
-               verticalScroll: true,
-               zoomable: false,
-               moveable: false,
-               stack: false,
-               showCurrentTime: false,
-               timeAxis: { scale: 'minute', step: 15 },
-
-               // 🔧 ここから追加：横軸固定のための時間範囲
-               start: new Date(`${year}-${String(month).padStart(2, '0')}-01T00:00:00`),
-               end: new Date(`${year}-${String(month).padStart(2, '0')}-01T23:59:59`),
-               min: new Date(`${year}-${String(month).padStart(2, '0')}-01T00:00:00`),
-               max: new Date(`${year}-${String(month).padStart(2, '0')}-01T23:59:59`),
-            };
-
-            // 💡 横幅を手動で設定（15分単位で24時間＝96コマ × 25px）
-            const totalBlocks = 96;
-            const pxPerBlock = 60;
-            const scrollWidth = totalBlocks * pxPerBlock;
-
-            document.getElementById('timeline').style.width = scrollWidth + 'px';
-
-            if (!timeline) {
-               timeline = new vis.Timeline(container, items, groups, options);
-            } else {
-               timeline.setItems(items);
-               timeline.setGroups(groups);
-               timeline.setOptions(options);
-            }
-            // 👇 追加
-            // fixMajorLabelText(year, month);
-         }
-
-         // ❌ キャンセル処理（仮）
-         window.cancelItem = function (id) {
-            alert(`予約ID ${id} をキャンセル（実装予定）`);
-         };
-
-         // 🔁 月切り替え
-         document.querySelectorAll('#monthTabs button').forEach((btn) => {
-            btn.addEventListener('click', () => {
-               const year = parseInt(btn.dataset.year);
-               const month = parseInt(btn.dataset.month);
-               drawTimeline(year, month);
-            });
-         });
-         const year = 2025;
-         const month = 9;
-
-         // ✅ 初期表示：9月
-         drawTimeline(year, month);
-      </script>
       <script src="./js/formUI.js"></script>
       <script src="./js/main.js"></script>
       <script src="./js/car_listanime.js"></script>
+      <script src="./js/timeLineForm.js"></script>
    </body>
 </html>

@@ -280,14 +280,15 @@ async function renderRepeatGroups() {
 		const div = document.createElement('div');
 		div.className = 'border p-3 rounded shadow-sm flex justify-between items-center';
 		div.innerHTML = `
-      <div>
-        <div class="font-bold">${data.title}</div>
-        <div class="text-sm text-gray-600">毎週 ${weekdaysStr}曜日 ${data.timeFrom}〜${data.timeTo}</div>
-        <div class="text-xs text-gray-400">月数: ${data.months || '?'}ヶ月 / 登録数: ${data.count || 0}件</div>
+		<div>
+		<div class="font-bold">${data.title}</div>
+		<div class="text-sm text-gray-600">毎週 ${weekdaysStr}曜日 ${data.timeFrom}〜${data.timeTo}</div>
+		<div class="text-xs text-gray-400">月数: ${data.months || '?'}ヶ月 / 登録数: ${data.count || 0}件</div>
 		<div class="text-xs text-gray-500">登録者: ${data.username || '不明'} </div>
-      </div>
-      <button onclick="deleteRepeatGroup('${doc.id}', this)" class="text-red-600 hover:underline text-sm">🗑️ 削除</button>
-    `;
+		<div class="text-xs text-gray-500">登録日: ${data.createdAt && !isNaN(new Date(data.createdAt)) ? new Date(data.createdAt).toLocaleDateString() : '不明'}</div>
+		</div>
+		<button onclick="deleteRepeatGroup('${doc.id}', this)" class="text-red-600 hover:underline text-sm">🗑️ 削除</button>
+	`;
 		list.appendChild(div);
 		hasValidGroup = true;
 	});

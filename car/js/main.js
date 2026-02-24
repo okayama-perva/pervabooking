@@ -87,6 +87,15 @@ document.getElementById('reservationForm').addEventListener('submit', async (e) 
          const end = new Date(endDate);
          const dateList = [];
 
+         // 時間比較用関数
+         function toMinutes(t) {
+            const [h, m] = t.split(':').map(Number);
+            return h * 60 + m;
+         }
+
+         // 🔹 日またぎ判定
+         const isOvernight = toMinutes(endTime) <= toMinutes(startTime);
+
          for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
             dateList.push(new Date(d));
          }
@@ -98,38 +107,40 @@ document.getElementById('reservationForm').addEventListener('submit', async (e) 
             let sTime, eTime;
 
             if (!isOvernight) {
-               // 🔹 通常パターン（例: 10:00〜17:00）
-               if (i === 0 && i === dateList.length - 1) {
-                  // 初日＝最終日（1日だけ）
-                  sTime = startTime;
-                  eTime = endTime;
-               } else if (i === 0) {
-                  sTime = startTime;
-                  eTime = '24:00';
-               } else if (i === dateList.length - 1) {
-                  sTime = '00:00';
-                  eTime = endTime;
-               } else {
-                  sTime = '00:00';
-                  eTime = '24:00';
-               }
+            // 🔹 通常パターン（例: 10:00〜15:00）
+            if (i === 0 && i === dateList.length - 1) {
+               // 単日
+               sTime = startTime;
+               eTime = endTime;
+            } else if (i === 0) {
+               // 初日
+               sTime = startTime;
+               eTime = '24:00';
+            } else if (i === dateList.length - 1) {
+               // 最終日
+               sTime = '00:00';
+               eTime = endTime;
             } else {
-               // 🔹 跨ぐパターン（例: 22:00〜06:00）
-               if (i === 0) {
-                  sTime = startTime;
-                  eTime = '24:00';
-               } else if (i === 1 && dateList.length === 2) {
-                  // 2日だけのとき（特殊）
-                  sTime = '00:00';
-                  eTime = endTime;
-               } else if (i === dateList.length - 1) {
-                  sTime = '00:00';
-                  eTime = endTime;
-               } else {
-                  sTime = '00:00';
-                  eTime = '24:00';
-               }
+               // 中日
+               sTime = '00:00';
+               eTime = '24:00';
             }
+         } else {
+            // 🔹 日をまたぐ（例: 22:00〜06:00）
+            if (i === 0) {
+               sTime = startTime;
+               eTime = '24:00';
+            } else if (i === dateList.length === 2) {
+               sTime = '00:00';
+               eTime = endTime;
+            } else if (i === dateList.length - 1) {
+               sTime = '00:00';
+               eTime = endTime;
+            } else {
+               sTime = '00:00';
+               eTime = '24:00';
+            }
+         }
 
             // 🔄 Googleカレンダーに登録
             const params = new URLSearchParams({

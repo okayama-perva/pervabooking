@@ -1,137 +1,138 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
-   <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>🚗 車予約システム</title>
-      <script src="https://cdn.tailwindcss.com"></script>
-      <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-      <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-      <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-      <!-- Firebaseの設定 -->
-      <script src="../common/init.js"></script>
-      <!-- 認証ガード -->
-      <script src="../common/authGuard.js"></script>
-      <!-- CDN -->
-      <link
-         href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css"
-         rel="stylesheet"
-      />
-      <script src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>車 予約システム</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;500;700;800&family=Orbitron:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="../common/init.js"></script>
+    <script src="../common/authGuard.js"></script>
+    <link
+      href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
+    <link rel="stylesheet" href="./css/style.css" />
+    <script defer>
+      function logout() {
+        auth.signOut().then(() => {
+          localStorage.removeItem('authExpireAt');
+          window.location.href = '../auth/login.html';
+        });
+      }
+    </script>
+  </head>
+  <body class="car-page min-h-screen p-4 md:p-8">
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
 
-      <!-- スタイルシート -->
-      <link rel="stylesheet" href="./css/style.css" />
+    <main class="relative z-10 mx-auto max-w-[1700px]">
+      <header class="mb-6 rounded-2xl border border-white/45 bg-white/70 p-5 shadow-lg backdrop-blur-md">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="badge">Fleet Desk</p>
+            <h1 class="mt-2 text-2xl font-bold text-slate-900 md:text-3xl">車両予約ダッシュボード</h1>
+            <p class="mt-1 text-sm text-slate-600">日別・複数日予約を一画面で管理できます。</p>
+          </div>
+          <div class="flex gap-2 header-actions">
+            <a href="/index.html" class="action-link">トップへ戻る</a>
+            <button onclick="logout()" class="action-link action-link-danger">ログアウト</button>
+          </div>
+        </div>
+      </header>
 
-      <!-- ログアウトボタン -->
-      <script defer>
-         function logout() {
-            auth.signOut().then(() => {
-               localStorage.removeItem('authExpireAt');
-               window.location.href = './auth/login.html';
-            });
-         }
-      </script>
-   </head>
-   <body class="bg-gray-100 min-h-screen p-6">
-      <!-- ヘッダー -->
-      <div class="flex justify-between items-center mb-4 max-w-2xl mx-auto">
-         <h1 class="text-2xl font-bold">🚗 車予約フォーム</h1>
-         <div class="flex space-x-4">
-            <a href="/index.html" class="text-sm text-gray-700 underline hover:text-blue-600"
-               >トップページへ</a
-            >
-            <button onclick="logout()" class="text-sm text-blue-600 underline">ログアウト</button>
-         </div>
-      </div>
-      <form id="reservationForm">
-         <div class="max-w-xl mx-auto bg-white shadow-md rounded p-6 space-y-6">
-            <div class="space-y-3">
-               <label class="block text-gray-700 font-medium">車の種類</label>
-               <select id="selectedCar" class="w-full border rounded px-3 py-2">
-                  <option value="シエンタ">シエンタ</option>
-                  <!-- <option value="car2">車2号</option>
-            <option value="car3">車3号</option> -->
-               </select>
+      <section class="grid gap-5 2xl:grid-cols-[minmax(460px,1fr)_minmax(980px,1.45fr)]">
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">予約フォーム</h2>
+            <span class="panel-chip">NEW RESERVATION</span>
+          </div>
+
+          <form id="reservationForm" class="space-y-5">
+            <div>
+              <label class="field-label" for="selectedCar">車種</label>
+              <select id="selectedCar" class="field-input">
+                <option value="シエンタ">シエンタ</option>
+              </select>
             </div>
 
-            <div class="space-y-3">
-               <label class="block font-medium text-gray-700">使用日</label>
-               <input type="date" id="startDate" class="border rounded px-3 py-2 w-full" />
-
-               <label class="block font-medium text-gray-700">終了日</label>
-               <input type="date" id="endDate" class="border rounded px-3 py-2 w-full" />
-
-               <label class="inline-flex items-center mt-2">
-                  <input type="checkbox" id="multiDayToggle" class="form-checkbox" />
-                  <span class="ml-2 text-sm text-gray-600">複数日予約する</span>
-               </label>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label class="field-label" for="startDate">利用日</label>
+                <input type="date" id="startDate" class="field-input" />
+              </div>
+              <div>
+                <label class="field-label" for="endDate">終了日</label>
+                <input type="date" id="endDate" class="field-input" />
+              </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-               <div>
-                  <label for="startTime" class="block text-gray-700 font-semibold mb-1"
-                     >開始時間</label
-                  >
-                  <select
-                     id="startTime"
-                     class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-blue-400 text-center bg-white hover:bg-gray-50"
-                  ></select>
-               </div>
-               <div>
-                  <label for="endTime" class="block text-gray-700 font-semibold mb-1"
-                     >終了時間</label
-                  >
-                  <select
-                     id="endTime"
-                     class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-blue-400 text-center bg-white hover:bg-gray-50"
-                  ></select>
-               </div>
+            <label class="toggle-row" for="multiDayToggle">
+              <input type="checkbox" id="multiDayToggle" class="h-4 w-4" />
+              <span>複数日で予約する</span>
+            </label>
+
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label class="field-label" for="startTime">開始時間</label>
+                <select id="startTime" class="field-input"></select>
+              </div>
+              <div>
+                <label class="field-label" for="endTime">終了時間</label>
+                <select id="endTime" class="field-input"></select>
+              </div>
             </div>
 
             <div>
-               <label class="block text-gray-700 font-medium">メモ</label>
-               <textarea id="memo" rows="3" class="w-full border rounded px-3 py-2"></textarea>
+              <label class="field-label" for="memo">メモ</label>
+              <textarea id="memo" rows="3" class="field-input" placeholder="用途や行き先があれば記入"></textarea>
             </div>
 
-            <button
-               type="submit"
-               id="submitBtn"
-               class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
-            >
-               予約する
-            </button>
+            <button type="submit" id="submitBtn" class="submit-btn">予約を登録</button>
+            <div id="message" class="text-sm text-emerald-700"></div>
+          </form>
+        </div>
 
-            <div id="message" class="text-sm text-green-600"></div>
-         </div>
-      </form>
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">予約タイムライン</h2>
+            <div class="flex gap-2 timeline-controls">
+              <select id="yearSelect" class="field-input field-input-small"></select>
+              <select id="monthSelect" class="field-input field-input-small">
+                <option value="1">1月</option>
+                <option value="2">2月</option>
+                <option value="3">3月</option>
+                <option value="4">4月</option>
+                <option value="5">5月</option>
+                <option value="6">6月</option>
+                <option value="7">7月</option>
+                <option value="8">8月</option>
+                <option value="9">9月</option>
+                <option value="10">10月</option>
+                <option value="11">11月</option>
+                <option value="12">12月</option>
+              </select>
+            </div>
+          </div>
+          <div class="timeline-wrap">
+            <div id="timeline"></div>
+          </div>
+        </div>
+      </section>
+    </main>
 
-      <h2>🚗 車予約タイムライン（月単位表示）</h2>
-
-      <div class="flex gap-2 mb-4">
-         <select id="yearSelect" class="border rounded px-2 py-1"></select>
-
-         <select id="monthSelect" class="border rounded px-2 py-1">
-            <option value="1">1月</option>
-            <option value="2">2月</option>
-            <option value="3">3月</option>
-            <option value="4">4月</option>
-            <option value="5">5月</option>
-            <option value="6">6月</option>
-            <option value="7">7月</option>
-            <option value="8">8月</option>
-            <option value="9">9月</option>
-            <option value="10">10月</option>
-            <option value="11">11月</option>
-            <option value="12">12月</option>
-         </select>
-      </div>
-      
-         <div id="timeline"></div>
-      
-
-      <script src="./js/formUI.js"></script>
-      <script src="./js/main.js"></script>
-      <script src="./js/car_listanime.js"></script>
-      <script src="./js/timeLineForm.js"></script>
-   </body>
+    <script src="./js/formUI.js"></script>
+    <script src="./js/main.js"></script>
+    <script src="./js/car_listanime.js"></script>
+    <script src="./js/timeLineForm.js"></script>
+  </body>
 </html>

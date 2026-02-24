@@ -1,5 +1,4 @@
-
-// 🔧 初期状態：単一日
+﻿// 期間入力制御
 const dateSection = document.getElementById('dateSection');
 const multiDayToggle = document.getElementById('multiDayToggle');
 const singleDateInput = document.getElementById('singleDate');
@@ -9,18 +8,24 @@ const endDateInput = document.getElementById('endDate');
 const startDate = document.getElementById('startDate');
 const endDate = document.getElementById('endDate');
 
+function formatLocalDate(date) {
+   const y = date.getFullYear();
+   const m = String(date.getMonth() + 1).padStart(2, '0');
+   const d = String(date.getDate()).padStart(2, '0');
+   return `${y}-${m}-${d}`;
+}
+
 // 初期状態：終了日は触れない
 endDate.disabled = true;
 endDate.value = startDate.value;
 
-// 開始日変更時に、終了日へ同期（単一予約時）
 startDate.addEventListener('change', () => {
-   const nextDay = new Date(startDate.value);
+   const [y, m, d] = startDate.value.split('-').map(Number);
+   const nextDay = new Date(y, m - 1, d);
    nextDay.setDate(nextDay.getDate() + 1);
-   endDate.value = nextDay.toISOString().split('T')[0];
+   endDate.value = formatLocalDate(nextDay);
 });
 
-// チェック切り替えで有効/無効切り替え
 multiDayToggle.addEventListener('change', () => {
    if (multiDayToggle.checked) {
       endDate.disabled = false;
@@ -33,7 +38,6 @@ multiDayToggle.addEventListener('change', () => {
 const submitBtn = document.getElementById('submitBtn');
 
 submitBtn.addEventListener('click', () => {
-   // エラーリセット
    startDate.classList.remove('border-red-500');
    endDate.classList.remove('border-red-500');
 
@@ -43,22 +47,18 @@ submitBtn.addEventListener('click', () => {
 
       if (start > end) {
          alert('終了日は開始日と同じか後の日付を選んでください。');
-
-         // 赤枠で強調
          startDate.classList.add('border-red-500');
          endDate.classList.add('border-red-500');
-         return; // 保存処理などがある場合はここで中断
+         return;
       }
    }
 });
 
-// 🔁 日付変更時にリアルタイムでバリデーション
 [startDate, endDate].forEach((el) => {
    el.addEventListener('change', validateDates);
 });
 
 function validateDates() {
-   // エラーリセット
    startDate.classList.remove('border-red-500');
    endDate.classList.remove('border-red-500');
 
@@ -66,7 +66,6 @@ function validateDates() {
       const start = new Date(startDate.value);
       const end = new Date(endDate.value);
 
-      // 両方入力されているときだけ比較（空欄で比較するとエラーになるので）
       if (startDate.value && endDate.value && start > end) {
          alert('終了日は開始日と同じか後の日付を選んでください。');
          startDate.classList.add('border-red-500');
@@ -74,6 +73,7 @@ function validateDates() {
       }
    }
 }
+
 function generateTimeOptions(selectElement, defaultTime) {
    const startHour = 6;
    const endHour = 22;
@@ -98,7 +98,6 @@ function generateTimeOptions(selectElement, defaultTime) {
    }
 }
 
-// 実行
 generateTimeOptions(document.getElementById('startTime'), '09:00');
 generateTimeOptions(document.getElementById('endTime'), '10:00');
 

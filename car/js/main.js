@@ -1,253 +1,162 @@
-// ✅ 予約送信処理（例：Firestore保存など）
+﻿function formatLocalDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function buildDailyTimeRange(startDate, startTime, endTime) {
+  return [{ date: startDate, startTime, endTime }];
+}
+
+function buildMultiDayTimeRanges(startDateText, endDateText, startTime, endTime) {
+  const ranges = [];
+  const [sy, sm, sd] = startDateText.split('-').map(Number);
+  const [ey, em, ed] = endDateText.split('-').map(Number);
+  const current = new Date(sy, sm - 1, sd);
+  const end = new Date(ey, em - 1, ed);
+
+  while (current <= end) {
+    const dateText = formatLocalDate(current);
+    const isFirst = dateText === startDateText;
+    const isLast = dateText === endDateText;
+
+    const dayStart = isFirst ? startTime : '00:00';
+    const dayEnd = isLast ? endTime : '24:00';
+    ranges.push({ date: dateText, startTime: dayStart, endTime: dayEnd });
+
+    current.setDate(current.getDate() + 1);
+  }
+
+  return ranges;
+}
+
+function toMinutes(timeText) {
+  const [h, m] = timeText.split(':').map(Number);
+  return h * 60 + m;
+}
+
+async function hasConflict(car, ranges) {
+  for (const range of ranges) {
+    const snapshot = await db
+      .collection('car_reservations')
+      .where('car', '==', car)
+      .where('date', '==', range.date)
+      .get();
+
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+      if (range.startTime < data.endTime && range.endTime > data.startTime) {
+        return `${range.date} ${range.startTime}-${range.endTime}`;
+      }
+    }
+  }
+
+  return null;
+}
+
 document.getElementById('reservationForm').addEventListener('submit', async (e) => {
-   e.preventDefault();
-   const startDate = document.getElementById('startDate').value;
-   const endDate = document.getElementById('endDate').value;
-   const startTime = document.getElementById('startTime').value;
-   const endTime = document.getElementById('endTime').value;
-   const car = document.getElementById('selectedCar').value;
-   const memo = document.getElementById('memo').value;
-   const multiDay = multiDayToggle.checked;
+  e.preventDefault();
 
-   console.log(startDate, endDate, startTime, endTime, car, memo, multiDay);
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
+  const startTime = document.getElementById('startTime').value;
+  const endTime = document.getElementById('endTime').value;
+  const car = document.getElementById('selectedCar').value;
+  const memo = document.getElementById('memo').value;
+  const multiDay = document.getElementById('multiDayToggle').checked;
+  const submitBtn = document.getElementById('submitBtn');
 
-   // 🔒 バリデーション
-   if (multiDay) {
-      // 複数日予約
-      if (!car || !startTime || !endTime || !startDate || !endDate) {
-         alert('すべての項目を入力してください');
-         return;
-      }
-   } else {
-      // 単一日予約
-      if (!car || !startTime || !startDate || !endDate) {
-         alert('すべての項目を入力してください');
-         return;
-      }
-   }
+  if (!car || !startDate || !endDate || !startTime || !endTime) {
+    alert('必須項目を入力してください。');
+    return;
+  }
 
-   const submitBtn = document.querySelector('#reservationForm button[type="submit"]');
-   if (!submitBtn) return;
-   // ⛔ 二重送信防止：すでに送信中なら無視
-   if (submitBtn.disabled) return;
+  if (!validateTimeRange()) {
+    return;
+  }
 
-   // ⏳ ボタン無効化 & 表示変更
-   submitBtn.disabled = true;
-   const originalText = submitBtn.innerText;
-   submitBtn.innerText = '送信中...';
+  if (multiDay && startDate === endDate && toMinutes(endTime) <= toMinutes(startTime)) {
+    alert('同日予約の場合、終了時間は開始時間より後にしてください。');
+    return;
+  }
 
-   // 時間のバリデーション
-   if (!validateTimeRange()) {
+  if (submitBtn.disabled) {
+    return;
+  }
+
+  submitBtn.disabled = true;
+  const originalText = submitBtn.innerText;
+  submitBtn.innerText = '登録中...';
+
+  try {
+    const ranges = multiDay
+      ? buildMultiDayTimeRanges(startDate, endDate, startTime, endTime)
+      : buildDailyTimeRange(startDate, startTime, endTime);
+
+    const conflict = await hasConflict(car, ranges);
+    if (conflict) {
+      alert(`既に予約されています: ${conflict}`);
       return;
-   }
-   // 🔥 Firestoreへ登録する例（要firebase初期化）
-   try {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      const dateList = [];
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-         dateList.push(new Date(d));
-      }
+    }
 
-      // 🔍 各日付ごとに重複チェック
-      for (let i = 0; i < dateList.length; i++) {
-         const dateObj = dateList[i];
-         const dateStr = dateObj.toISOString().slice(0, 10);
+    const uid = auth.currentUser.uid;
+    const userDoc = await db.collection('users').doc(uid).get();
+    const username = userDoc.exists ? userDoc.data().username : '未登録';
 
-         const sTime = i === 0 ? startTime : '00:00';
-         const eTime = i === dateList.length - 1 ? endTime : '24:00';
+    const calendarApiUrl =
+      'https://script.google.com/macros/s/AKfycbzdsWjVm75VoFfdNd5m4ir3bs-S5BJVe2MyWmrkJsuPUTmoGmQ7dRPxFoCBQ2U905VJ/exec';
 
-         const snapshot = await db
-            .collection('car_reservations')
-            .where('car', '==', car)
-            .where('date', '==', dateStr)
-            .get();
+    const reservations = [];
 
-         for (const doc of snapshot.docs) {
-            const data = doc.data();
-            if (sTime < data.endTime && eTime > data.startTime) {
-               alert(`🚫 ${dateStr} の ${sTime}〜${eTime} は既に予約されています`);
-               submitBtn.disabled = false;
-               submitBtn.innerText = originalText;
-               return;
-            }
-         }
-      }
-      const uid = auth.currentUser.uid;
-      const userDoc = await db.collection('users').doc(uid).get();
-      const username = userDoc.exists ? userDoc.data().username : '未登録';
-      const calendarApiUrl =
-         'https://script.google.com/macros/s/AKfycbzdsWjVm75VoFfdNd5m4ir3bs-S5BJVe2MyWmrkJsuPUTmoGmQ7dRPxFoCBQ2U905VJ/exec'; // 🔁 あなたのGAS URLに差し替え
-
-      let reservations = [];
-
-      if (multiDay) {
-         console.log('複数日予約処理');
-         const start = new Date(startDate);
-         const end = new Date(endDate);
-         const dateList = [];
-
-         // 時間比較用関数
-         function toMinutes(t) {
-            const [h, m] = t.split(':').map(Number);
-            return h * 60 + m;
-         }
-
-         // 🔹 日またぎ判定
-         const isOvernight = toMinutes(endTime) <= toMinutes(startTime);
-
-         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-            dateList.push(new Date(d));
-         }
-
-         for (let i = 0; i < dateList.length; i++) {
-            const dateObj = dateList[i];
-            const dateStr = dateObj.toISOString().slice(0, 10);
-
-            let sTime, eTime;
-
-            if (!isOvernight) {
-            // 🔹 通常パターン（例: 10:00〜15:00）
-            if (i === 0 && i === dateList.length - 1) {
-               // 単日
-               sTime = startTime;
-               eTime = endTime;
-            } else if (i === 0) {
-               // 初日
-               sTime = startTime;
-               eTime = '24:00';
-            } else if (i === dateList.length - 1) {
-               // 最終日
-               sTime = '00:00';
-               eTime = endTime;
-            } else {
-               // 中日
-               sTime = '00:00';
-               eTime = '24:00';
-            }
-         } else {
-            // 🔹 日をまたぐ（例: 22:00〜06:00）
-            if (i === 0) {
-               sTime = startTime;
-               eTime = '24:00';
-            } else if (i === dateList.length === 2) {
-               sTime = '00:00';
-               eTime = endTime;
-            } else if (i === dateList.length - 1) {
-               sTime = '00:00';
-               eTime = endTime;
-            } else {
-               sTime = '00:00';
-               eTime = '24:00';
-            }
-         }
-
-            // 🔄 Googleカレンダーに登録
-            const params = new URLSearchParams({
-               action: 'add',
-               user: username,
-               car,
-               memo,
-               date: dateStr,
-               starttime: sTime,
-               endtime: eTime,
-               colorId: '6',
-            });
-
-            const res = await fetch(calendarApiUrl, {
-               method: 'POST',
-               body: params,
-            });
-
-            const result = await res.json();
-
-            if (result.status === 'success') {
-               reservations.push({
-                  car,
-                  date: dateStr,
-                  startTime: sTime,
-                  endTime: eTime,
-                  memo,
-                  uid,
-                  username,
-                  createdAt: new Date(),
-                  eventId: result.eventId, // 🔑 ここ大事！
-               });
-            } else {
-               throw new Error(`Googleカレンダー登録失敗: ${result.message}`);
-            }
-         }
-      } else {
-         const dateStr = startDate;
-         console.log(car + dateStr + startTime + endTime);
-
-         const snapshot = await db
-            .collection('car_reservations')
-            .where('car', '==', car)
-            .where('date', '==', dateStr)
-            .get();
-
-         for (const doc of snapshot.docs) {
-            const data = doc.data();
-            if (startTime < data.endTime && endTime > data.startTime) {
-               alert(`🚫 ${dateStr} の ${startTime}〜${endTime} は既に予約されています`);
-               submitBtn.disabled = false;
-               submitBtn.innerText = originalText;
-               return;
-            }
-         }
-
-         const params = new URLSearchParams({
-            action: 'add',
-            user: username,
-            car,
-            memo,
-            date: dateStr,
-            starttime: startTime,
-            endtime: endTime,
-            colorId: '6',
-         });
-
-         const res = await fetch(calendarApiUrl, {
-            method: 'POST',
-            body: params,
-         });
-
-         const result = await res.json();
-
-         if (result.status === 'success') {
-            reservations.push({
-               car,
-               date: dateStr,
-               startTime,
-               endTime,
-               memo,
-               uid,
-               username,
-               createdAt: new Date(),
-               eventId: result.eventId,
-            });
-         } else {
-            throw new Error(`Googleカレンダー登録失敗: ${result.message}`);
-         }
-      }
-
-      // 🔥 Firestore へ登録
-      const batch = db.batch();
-      reservations.forEach((data) => {
-         const docRef = db.collection('car_reservations').doc(); // 任意のコレクション名
-         batch.set(docRef, data);
+    for (const range of ranges) {
+      const params = new URLSearchParams({
+        action: 'add',
+        user: username,
+        car,
+        memo,
+        date: range.date,
+        starttime: range.startTime,
+        endtime: range.endTime,
+        colorId: '6',
       });
-      await batch.commit();
 
-      alert('予約を登録しました！');
-      location.reload();
-   } catch (err) {
-      console.error('予約登録エラー:', err);
-      alert('登録に失敗しました');
-   } finally {
-      // ✅ ボタン元に戻す
-      submitBtn.disabled = false;
-      submitBtn.innerText = originalText;
-   }
+      const res = await fetch(calendarApiUrl, { method: 'POST', body: params });
+      const result = await res.json();
+
+      if (result.status !== 'success') {
+        throw new Error(result.message || 'Google Calendar登録失敗');
+      }
+
+      reservations.push({
+        car,
+        date: range.date,
+        startTime: range.startTime,
+        endTime: range.endTime,
+        memo,
+        uid,
+        username,
+        createdAt: new Date(),
+        eventId: result.eventId,
+      });
+    }
+
+    const batch = db.batch();
+    reservations.forEach((data) => {
+      batch.set(db.collection('car_reservations').doc(), data);
+    });
+    await batch.commit();
+
+    alert('予約を登録しました。');
+    if (typeof window.refreshCarTimeline === 'function') {
+      await window.refreshCarTimeline();
+    }
+    document.getElementById('reservationForm').reset();
+  } catch (err) {
+    console.error('予約登録エラー:', err);
+    alert(`予約登録に失敗しました。\n${err.message || ''}`);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerText = originalText;
+  }
 });

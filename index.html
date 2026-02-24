@@ -1,85 +1,455 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
-	<head>
-		<meta charset="UTF-8" />
-		<title>PERVA 社内ポータル</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<script src="https://cdn.tailwindcss.com"></script>
-		<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-		<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-		<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-		<script src="./common/init.js"></script>
-		<script src="./common/authGuard.js" defer></script>
-		<script defer>
-			function logout() {
-				auth.signOut().then(() => {
-					localStorage.removeItem('authExpireAt');
-					window.location.href = './auth/login.html';
-				});
-			}
-		</script>
-	</head>
-	<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center text-center px-4">
-		<h1 class="text-3xl font-bold mb-6 text-gray-800"> PERVA 社内ポータル</h1>
-		<h1 class="text-2xl font-bold mb-4 text-gray-800">ようこそ、<span id="welcomeName">...</span> さん！</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <title>PERVA ポータル</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;500;700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="./common/init.js"></script>
+    <script src="./common/authGuard.js" defer></script>
+    <script defer>
+      function logout() {
+        auth.signOut().then(() => {
+          localStorage.removeItem('authExpireAt');
+          window.location.href = './auth/login.html';
+        });
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'M PLUS 1p', sans-serif;
+      }
+      .hero-title {
+        font-family: 'Zen Kaku Gothic New', sans-serif;
+      }
+      #weatherCard,
+      #weatherCard details,
+      #weatherCard details > div {
+        min-width: 0;
+        max-width: 100%;
+      }
+      #weatherDetail {
+        word-break: break-word;
+      }
+      #weatherHourly {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 8px;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+      #weatherHourlyTrack {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 12px;
+        width: max-content;
+      }
+      #weatherHourlyTrack > * {
+        flex: 0 0 148px;
+        width: 148px;
+        min-width: 148px;
+        max-width: 148px;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen overflow-x-hidden bg-slate-950 text-slate-100">
+    <div class="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_20%_0%,#0ea5e933_0,#020617_40%),radial-gradient(circle_at_100%_100%,#22c55e22_0,#020617_45%)]"></div>
+    <div class="mx-auto w-[min(1000px,calc(100vw-2rem))] py-8 md:py-12">
+      <header class="mb-8 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-md">
+        <h1 class="hero-title text-3xl font-black tracking-tight text-white md:text-4xl">PERVA ポータル</h1>
+        <h1 class="mt-2 text-xl font-bold text-slate-100 md:text-2xl">ようこそ、<span id="welcomeName">...</span> さん</h1>
+      </header>
 
-		<div class="space-y-4 w-full max-w-sm">
-			<a
-				href="./reservation/index.html"
-				class="block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl shadow transition text-lg"
-			>
-				📅 会議室を予約する
-			</a>
-			<a
-				href="car/index.html"
-				class="block bg-teal-600 hover:bg-teal-700 text-white font-semibold py-4 rounded-xl shadow transition text-lg"
-			>
-				🚗 車を予約する
-			</a>
-			<a
-				href="./perva_box/index.html"
-				class="block bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-xl shadow transition text-lg"
-			>🍪 お菓子要望</a>
-			<a
-				href="https://docs.google.com/forms/d/e/1FAIpQLSeq3AXZnUdQ5beZy75RaN1BGZB16x26MAPX4BYRBPhz7P0icw/viewform?usp=dialog"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="block bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-4 rounded-xl shadow transition text-lg"
-			>
-				💡 社内改善案を依頼する
-			</a>
-		</div>
+      <section class="grid gap-5">
+        <div class="space-y-5" style="width: 100%; min-width: -webkit-fill-available;">
+          <div id="weatherCard" class="overflow-hidden rounded-3xl border border-cyan-200/20 bg-slate-900/70 p-5 text-left shadow-2xl shadow-cyan-950/30">
+            <div class="flex items-start justify-between">
+              <p class="text-sm text-slate-300">東京の天気 <span id="weatherUpdated"></span></p>
+              <span id="weatherNowTag" class="rounded-full bg-cyan-400/20 px-2 py-0.5 text-[10px] font-semibold text-cyan-200">LIVE</span>
+            </div>
+            <div class="mt-2 flex items-center gap-3">
+              <div id="weatherIcon" class="grid h-12 w-12 place-items-center rounded-xl bg-cyan-100/10 text-2xl">--</div>
+              <div>
+                <p id="weatherText" class="text-xl font-bold leading-tight text-white">取得中...</p>
+                <p id="weatherMeta" class="text-xs text-slate-400">読み込み中</p>
+              </div>
+            </div>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <div class="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                <p class="text-[10px] text-slate-400">今日の気温</p>
+                <p id="weatherTempRange" class="text-sm font-semibold text-slate-100">--</p>
+              </div>
+              <div class="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                <p class="text-[10px] text-slate-400">降水確率</p>
+                <p id="weatherRainToday" class="text-sm font-semibold text-slate-100">--</p>
+              </div>
+            </div>
+            <details class="mt-2 overflow-hidden rounded-xl border border-white/10 bg-white/5 p-2">
+              <summary class="cursor-pointer text-sm text-cyan-300">詳細を見る</summary>
+              <div class="mt-2 pr-1">
+                <div id="weatherDetail" class="text-sm text-slate-200 leading-6">
+                  取得中...
+                </div>
+                <div class="mt-3 min-w-0">
+                  <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p class="text-sm font-semibold text-slate-200">3時間ごとの予報</p>
+                    <div class="flex items-center gap-2 self-end sm:self-auto">
+                      <button
+                        id="weatherPrevDay"
+                        type="button"
+                        class="h-7 w-7 rounded border border-white/20 text-xs text-slate-200 hover:bg-white/10"
+                      >
+                        ←
+                      </button>
+                      <span id="weatherSelectedDate" class="min-w-[44px] text-center text-xs text-slate-300">--</span>
+                      <button
+                        id="weatherNextDay"
+                        type="button"
+                        class="h-7 w-7 rounded border border-white/20 text-xs text-slate-200 hover:bg-white/10"
+                      >
+                        →
+                      </button>
+                    </div>
+                  </div>
+                  <p class="mt-1 text-[11px] text-slate-400">横にスワイプして確認できます</p>
+                  <div id="weatherHourly" class="mt-2 text-xs text-slate-100">
+                    取得中...
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
 
-		<button onclick="logout()" class="mt-8 text-sm text-gray-500 hover:underline hover:text-red-600 transition">
-			ログアウト
-		</button>
+        <div class="space-y-4">
+          <a
+            href="./reservation/index.html"
+            class="block rounded-2xl border border-blue-300/30 bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-5 text-lg font-semibold text-white shadow-lg transition hover:translate-y-[-1px] hover:brightness-110"
+          >
+            会議室の予約をする
+          </a>
+          <a
+            href="car/index.html"
+            class="block rounded-2xl border border-teal-300/30 bg-gradient-to-r from-teal-600 to-cyan-500 px-6 py-5 text-lg font-semibold text-white shadow-lg transition hover:translate-y-[-1px] hover:brightness-110"
+          >
+            車を予約する
+          </a>
+          <a
+            href="./perva_box/index.html"
+            class="block rounded-2xl border border-green-300/30 bg-gradient-to-r from-green-600 to-emerald-500 px-6 py-5 text-lg font-semibold text-white shadow-lg transition hover:translate-y-[-1px] hover:brightness-110"
+          >
+            お菓子要望
+          </a>
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSeq3AXZnUdQ5beZy75RaN1BGZB16x26MAPX4BYRBPhz7P0icw/viewform?usp=dialog"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="block rounded-2xl border border-yellow-200/40 bg-gradient-to-r from-yellow-500 to-amber-400 px-6 py-5 text-lg font-semibold text-white shadow-lg transition hover:translate-y-[-1px] hover:brightness-110"
+          >
+            社員意見フォーム
+          </a>
 
-		<div class="mt-12 text-gray-600 text-sm max-w-md">
-			<p>🚀 社内改善案を募集しています！</p>
-			<p>「できる・できない」「良い・悪い」は問いません。</p>
-			<p class="font-semibold text-gray-700 mt-2">自由な発想をお待ちしています！！</p>
-		</div>
-		<script>
-			auth.onAuthStateChanged((user) => {
-				if (user) {
-					const uid = user.uid;
-					db.collection('users')
-						.doc(uid)
-						.get()
-						.then((doc) => {
-							if (doc.exists) {
-								const username = doc.data().username;
-								document.getElementById('welcomeName').textContent = username;
-							} else {
-								document.getElementById('welcomeName').textContent = 'ユーザー';
-							}
-						})
-						.catch((error) => {
-							console.error('ユーザー名の取得に失敗:', error);
-							document.getElementById('welcomeName').textContent = 'エラー';
-						});
-				}
-			});
-		</script>
-	</body>
+          <button onclick="logout()" class="mt-2 w-full rounded-xl border border-red-300/40 bg-red-500/10 py-3 text-sm font-semibold text-red-200 transition hover:bg-red-500/20">
+            ログアウト
+          </button>
+        </div>
+      </section>
+
+      <div class="mt-10 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300 md:max-w-2xl">
+        <p>社員意見フォームを設置しています。</p>
+        <p>できる・できない、悪い・良いの垣根はありません。</p>
+        <p class="mt-2 font-semibold text-slate-100">自由な提案をお待ちしています。</p>
+      </div>
+    </div>
+
+    <script>
+      let weatherData = null;
+      let weatherDayIndex = 0;
+
+      function formatLocalDate(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      function formatDayLabel(dateText) {
+        const d = new Date(`${dateText}T00:00:00`);
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${mm}/${dd}`;
+      }
+
+      function renderHourlyForDay() {
+        const weatherHourlyEl = document.getElementById('weatherHourly');
+        const weatherSelectedDateEl = document.getElementById('weatherSelectedDate');
+        const prevBtn = document.getElementById('weatherPrevDay');
+        const nextBtn = document.getElementById('weatherNextDay');
+
+        if (!weatherData?.hourly?.time?.length) {
+          weatherHourlyEl.textContent = '3時間予報がありません';
+          return;
+        }
+
+        const hourly = weatherData.hourly;
+        const dateKeys = Array.from(new Set(hourly.time.map((t) => t.slice(0, 10))));
+        const maxIndex = dateKeys.length - 1;
+        weatherDayIndex = Math.max(0, Math.min(weatherDayIndex, maxIndex));
+        const selectedDate = dateKeys[weatherDayIndex];
+        weatherSelectedDateEl.textContent = formatDayLabel(selectedDate);
+        prevBtn.disabled = weatherDayIndex === 0;
+        nextBtn.disabled = weatherDayIndex === maxIndex;
+        prevBtn.classList.toggle('opacity-50', prevBtn.disabled);
+        nextBtn.classList.toggle('opacity-50', nextBtn.disabled);
+
+        const codeMap = {
+          0: '快晴',
+          1: '晴れ',
+          2: '晴れ時々くもり',
+          3: 'くもり',
+          45: '霧',
+          48: '着氷性の霧',
+          51: '弱い霧雨',
+          53: '霧雨',
+          55: '強い霧雨',
+          61: '弱い雨',
+          63: '雨',
+          65: '強い雨',
+          71: '弱い雪',
+          73: '雪',
+          75: '強い雪',
+          80: 'にわか雨',
+          81: '強いにわか雨',
+          82: '激しいにわか雨',
+          95: '雷雨',
+        };
+
+        const nextItems = [];
+        const now = new Date();
+        const nowBlockHour = Math.floor(now.getHours() / 3) * 3;
+        const todayKey = formatLocalDate(now);
+        for (let i = 0; i < hourly.time.length; i += 1) {
+          const dateText = hourly.time[i].slice(0, 10);
+          if (dateText !== selectedDate) continue;
+
+          const date = new Date(hourly.time[i]);
+          if (date.getHours() % 3 !== 0) continue;
+          nextItems.push({
+            hh: `${String(date.getHours()).padStart(2, '0')}:00`,
+            hour: date.getHours(),
+            temp: hourly.temperature_2m?.[i],
+            rain: hourly.precipitation_probability?.[i],
+            weather: codeMap[hourly.weather_code?.[i]] || '不明',
+            weatherCode: hourly.weather_code?.[i],
+            isNow: selectedDate === todayKey && date.getHours() === nowBlockHour,
+          });
+        }
+
+        const iconMap = {
+          0: '☀️',
+          1: '🌤️',
+          2: '⛅',
+          3: '☁️',
+          45: '🌫️',
+          48: '🌫️',
+          51: '🌦️',
+          53: '🌦️',
+          55: '🌧️',
+          61: '🌧️',
+          63: '🌧️',
+          65: '🌧️',
+          71: '🌨️',
+          73: '🌨️',
+          75: '❄️',
+          80: '🌦️',
+          81: '🌧️',
+          82: '⛈️',
+          95: '⛈️',
+        };
+
+        const cardsHtml = nextItems
+          .map(
+            (item) => `
+              <div class="snap-start rounded-xl border p-3 shadow-sm ${
+                item.isNow ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white'
+              }">
+                <div class="flex items-center justify-between">
+                  <p class="text-sm font-bold text-gray-800">${item.hh}</p>
+                  <p class="text-lg">${iconMap[item.weatherCode] || '🌈'}</p>
+                </div>
+                <p class="mt-1 text-xs text-gray-600">${item.weather}</p>
+                <p class="mt-1 text-2xl font-bold tracking-tight text-gray-900">${item.temp}°C</p>
+                <div class="mt-2">
+                  <div class="mb-1 flex items-center justify-between text-[11px] text-gray-500">
+                    <span>降水確率</span>
+                    <span>${item.rain}%</span>
+                  </div>
+                  <div class="h-1.5 rounded bg-gray-200">
+                    <div class="h-1.5 rounded bg-sky-500" style="width: ${Math.max(
+                      0,
+                      Math.min(item.rain ?? 0, 100)
+                    )}%"></div>
+                  </div>
+                </div>
+                ${
+                  item.isNow
+                    ? '<p class="mt-2 inline-block rounded bg-blue-600 px-2 py-0.5 text-[10px] font-semibold text-white">現在に近い時間帯</p>'
+                    : ''
+                }
+              </div>
+            `
+          )
+          .join('');
+        weatherHourlyEl.innerHTML = `<div id="weatherHourlyTrack">${cardsHtml}</div>`;
+      }
+
+      async function fetchTokyoWeather() {
+        const weatherTextEl = document.getElementById('weatherText');
+        const weatherUpdatedEl = document.getElementById('weatherUpdated');
+        const weatherIconEl = document.getElementById('weatherIcon');
+        const weatherMetaEl = document.getElementById('weatherMeta');
+        const weatherTempRangeEl = document.getElementById('weatherTempRange');
+        const weatherRainTodayEl = document.getElementById('weatherRainToday');
+        const weatherDetailEl = document.getElementById('weatherDetail');
+        try {
+          const url =
+            'https://api.open-meteo.com/v1/forecast?latitude=35.6762&longitude=139.6503&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,precipitation,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&hourly=temperature_2m,precipitation_probability,weather_code&forecast_days=7&timezone=Asia%2FTokyo';
+          const res = await fetch(url);
+          if (!res.ok) throw new Error('weather api error');
+
+          const data = await res.json();
+          weatherData = data;
+          weatherDayIndex = 0;
+          const current = data.current || {};
+          const timeText = current.time ? current.time.split('T')[1].slice(0, 5) : '';
+          weatherUpdatedEl.textContent = timeText ? `(${timeText}時点)` : '';
+          const codeMap = {
+            0: '快晴',
+            1: '晴れ',
+            2: '晴れ時々くもり',
+            3: 'くもり',
+            45: '霧',
+            48: '着氷性の霧',
+            51: '弱い霧雨',
+            53: '霧雨',
+            55: '強い霧雨',
+            61: '弱い雨',
+            63: '雨',
+            65: '強い雨',
+            71: '弱い雪',
+            73: '雪',
+            75: '強い雪',
+            80: 'にわか雨',
+            81: '強いにわか雨',
+            82: '激しいにわか雨',
+            95: '雷雨',
+          };
+          const iconMap = {
+            0: '☀️',
+            1: '🌤️',
+            2: '⛅',
+            3: '☁️',
+            45: '🌫️',
+            48: '🌫️',
+            51: '🌦️',
+            53: '🌦️',
+            55: '🌧️',
+            61: '🌧️',
+            63: '🌧️',
+            65: '🌧️',
+            71: '🌨️',
+            73: '🌨️',
+            75: '❄️',
+            80: '🌦️',
+            81: '🌧️',
+            82: '⛈️',
+            95: '⛈️',
+          };
+
+          const weather = codeMap[current.weather_code] || '不明';
+          weatherTextEl.textContent = `${weather} ${current.temperature_2m}°C`;
+          weatherIconEl.textContent = iconMap[current.weather_code] || '🌈';
+          weatherMetaEl.textContent = `体感 ${current.apparent_temperature ?? '-'}°C / 湿度 ${
+            current.relative_humidity_2m ?? '-'
+          }%`;
+
+          const daily = data.daily || {};
+          const maxTemp = daily.temperature_2m_max?.[0];
+          const minTemp = daily.temperature_2m_min?.[0];
+          const rainProb = daily.precipitation_probability_max?.[0];
+          const sunrise = daily.sunrise?.[0]?.split('T')[1] || '-';
+          const sunset = daily.sunset?.[0]?.split('T')[1] || '-';
+          weatherTempRangeEl.textContent = `${maxTemp ?? '-'}°C / ${minTemp ?? '-'}°C`;
+          weatherRainTodayEl.textContent = `${rainProb ?? '-'}%`;
+
+          weatherDetailEl.innerHTML = [
+            `体感温度: ${current.apparent_temperature ?? '-'}°C`,
+            `湿度: ${current.relative_humidity_2m ?? '-'}%`,
+            `風速: ${current.wind_speed_10m ?? '-'} km/h`,
+            `降水量(現在): ${current.precipitation ?? '-'} mm`,
+            `最高 / 最低: ${maxTemp ?? '-'}°C / ${minTemp ?? '-'}°C`,
+            `降水確率(今日): ${rainProb ?? '-'}%`,
+            `日の出 / 日の入: ${sunrise} / ${sunset}`,
+          ].join('<br>');
+
+          renderHourlyForDay();
+        } catch (e) {
+          console.error('天気取得エラー:', e);
+          weatherTextEl.textContent = '天気を取得できませんでした';
+          weatherUpdatedEl.textContent = '';
+          weatherIconEl.textContent = '--';
+          weatherMetaEl.textContent = '再読込してください';
+          weatherTempRangeEl.textContent = '--';
+          weatherRainTodayEl.textContent = '--';
+          weatherDetailEl.textContent = '詳細情報を取得できませんでした';
+          document.getElementById('weatherHourly').textContent = '3時間予報を取得できませんでした';
+        }
+      }
+
+      document.getElementById('weatherPrevDay').addEventListener('click', () => {
+        weatherDayIndex -= 1;
+        renderHourlyForDay();
+      });
+
+      document.getElementById('weatherNextDay').addEventListener('click', () => {
+        weatherDayIndex += 1;
+        renderHourlyForDay();
+      });
+
+      fetchTokyoWeather();
+
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          const uid = user.uid;
+          db.collection('users')
+            .doc(uid)
+            .get()
+            .then((doc) => {
+              if (doc.exists) {
+                const username = doc.data().username;
+                document.getElementById('welcomeName').textContent = username;
+              } else {
+                document.getElementById('welcomeName').textContent = 'ユーザー';
+              }
+            })
+            .catch((error) => {
+              console.error('ユーザー名取得エラー:', error);
+              document.getElementById('welcomeName').textContent = 'エラー';
+            });
+        }
+      });
+    </script>
+  </body>
 </html>

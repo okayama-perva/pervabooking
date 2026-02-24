@@ -1,137 +1,156 @@
-const container = document.getElementById('timeline');
+﻿const timelineContainer = document.getElementById('timeline');
+let timeline = null;
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth() + 1;
 
-// ✅ サンプルデータ
-const sampleData = [
-   {
-      id: 1,
-      date: '2025-09-04',
-      start: '2025-09-04T06:30:00',
-      end: '2025-09-04T09:15:00',
-      car: 'シエンタ',
-      user: '内山',
-   },
-   {
-      id: 2,
-      date: '2025-09-07',
-      start: '2025-09-07T09:00:00',
-      end: '2025-09-07T11:45:00',
-      car: 'ヤリス',
-      user: '岡山',
-   },
-   {
-      id: 3,
-      date: '2025-09-12',
-      start: '2025-09-12T20:30:00',
-      end: '2025-09-13T21:30:00',
-      car: 'プリウス',
-      user: '古舘',
-   },
-];
+function formatLocalDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
 
 function getMonthDates(year, month) {
-   const dates = [];
-   const date = new Date(year, month - 1, 1);
-   const end = new Date(year, month, 1);
+  const dates = [];
+  const date = new Date(year, month - 1, 1);
+  const end = new Date(year, month, 1);
 
-   while (date < end) {
-      const localDate = new Date(date);
-      const iso = localDate.toLocaleDateString('sv-SE');
-      dates.push({
-         id: iso,
-         content: new Date(iso).toLocaleDateString('ja-JP', {
-            month: 'short',
-            day: 'numeric',
-            weekday: 'short',
-         }),
-      });
-      date.setDate(date.getDate() + 1);
-   }
-   return dates;
+  while (date < end) {
+    const localDate = new Date(date);
+    const iso = formatLocalDate(localDate);
+    dates.push({
+      id: iso,
+      content: new Date(iso).toLocaleDateString('ja-JP', {
+        month: 'short',
+        day: 'numeric',
+        weekday: 'short',
+      }),
+    });
+    date.setDate(date.getDate() + 1);
+  }
+
+  return dates;
 }
 
-function fixMajorLabelText(year, month) {
-   const labelText = `${year}年${month}月`;
-   let attempts = 0;
-   const interval = setInterval(() => {
-      const labels = document.querySelectorAll('.vis-text.vis-major div');
-      if (labels.length > 0) {
-         labels.forEach((el) => {
-            if (!el.innerText.includes('年')) {
-               el.innerText = labelText;
-            }
-         });
-         attempts++;
-      }
-      if (attempts >= 5) {
-         clearInterval(interval);
-      }
-   }, 300);
+function splitReservationByDay(reservation) {
+  const segments = [];
+  const isSingleDay = reservation.startTime < reservation.endTime;
+
+  if (isSingleDay) {
+    segments.push({
+      date: reservation.date,
+      startTime: reservation.startTime,
+      endTime: reservation.endTime,
+    });
+    return segments;
+  }
+
+  const [y, m, d] = reservation.date.split('-').map(Number);
+  const nextDate = new Date(y, m - 1, d);
+  nextDate.setDate(nextDate.getDate() + 1);
+
+  segments.push({
+    date: reservation.date,
+    startTime: reservation.startTime,
+    endTime: '24:00',
+  });
+  segments.push({
+    date: formatLocalDate(nextDate),
+    startTime: '00:00',
+    endTime: reservation.endTime,
+  });
+
+  return segments;
 }
 
-let timeline = null;
-
-function drawTimeline(year, month) {
-   const groups = new vis.DataSet(getMonthDates(year, month));
-   const items = new vis.DataSet(
-      sampleData
-         .filter((item) => {
-            const d = new Date(item.date);
-            return d.getFullYear() === year && d.getMonth() + 1 === month;
-         })
-         .map((item) => {
-            const startTime = new Date(`1970-01-01T${item.start.split('T')[1]}`);
-            const endTime = new Date(`1970-01-01T${item.end.split('T')[1]}`);
-            return {
-               id: item.id,
-               group: item.date,
-               start: startTime,
-               end: endTime,
-               content: `車種： ${item.car}<br>\u{1F464} ${item.user} <button class="cancelBtn" onclick="cancelItem(${item.id})">\u{274C}</button>`,
-               style: 'background-color: #60a5fa; color: white; padding: 5px; border-radius: 6px;',
-            };
-         })
-   );
-
-   const options = {
-      groupOrder: 'id',
-      orientation: 'top',
-      verticalScroll: true,
-      horizontalScroll: true,
-      zoomable: false,
-      moveable: false,
-      stack: false,
-      autoResize: false,
-      showCurrentTime: false,
-      timeAxis: { scale: 'minute', step: 30 },
-      start: new Date('1970-01-01T06:00:00'),
-      end: new Date('1970-01-01T22:30:00'),
-      min: new Date('1970-01-01T06:00:00'),
-      max: new Date('1970-01-01T22:30:00'),
-      width: '1700px', // 固定横幅
-      height: '600px',
-   };
-
-   if (!timeline) {
-      timeline = new vis.Timeline(container, items, groups, options);
-   } else {
-      timeline.setItems(items);
-      timeline.setGroups(groups);
-      timeline.setOptions(options);
-   }
-   // 👇 追加
-   fixMajorLabelText(year, month);
+function normalizeTimeForVis(timeText) {
+  if (timeText === '24:00') {
+    return '23:59:59';
+  }
+  return `${timeText}:00`;
 }
 
-// ❌ キャンセル処理（仮）
-window.cancelItem = function (id) {
-   alert(`予約ID ${id} をキャンセル（実装予定）`);
-};
+async function fetchReservations(year, month) {
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 1);
 
-// 🔁 月切り替え
-document.querySelectorAll('#monthTabs button').forEach((btn) => {
-   btn.addEventListener('click', () => {
-      const year = parseInt(btn.dataset.year);
-      const month = parseInt(btn.dataset.month);
-      drawTimeline(year, month);
-   });
-});
+  const snapshot = await db
+    .collection('car_reservations')
+    .where('date', '>=', formatLocalDate(startDate))
+    .where('date', '<', formatLocalDate(endDate))
+    .get();
+
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+}
+
+function buildItemContent(reservation, segment) {
+  return `<strong>${segment.startTime}-${segment.endTime}</strong><br>${reservation.username || '不明'} / ${reservation.car}`;
+}
+
+function buildItemTitle(reservation, segment) {
+  return [
+    `利用者: ${reservation.username || '不明'}`,
+    `車: ${reservation.car}`,
+    `日時: ${segment.date} ${segment.startTime}-${segment.endTime}`,
+    reservation.memo ? `メモ: ${reservation.memo}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
+async function drawTimeline(year, month) {
+  currentYear = year;
+  currentMonth = month;
+
+  const groups = new vis.DataSet(getMonthDates(year, month));
+  const reservations = await fetchReservations(year, month);
+
+  const items = new vis.DataSet(
+    reservations.flatMap((reservation) =>
+      splitReservationByDay(reservation).map((segment, idx) => ({
+        id: `${reservation.id}-${idx}`,
+        group: segment.date,
+        start: new Date(`1970-01-01T${normalizeTimeForVis(segment.startTime)}`),
+        end: new Date(`1970-01-01T${normalizeTimeForVis(segment.endTime)}`),
+        content: buildItemContent(reservation, segment),
+        title: buildItemTitle(reservation, segment),
+        className: 'reservation-item',
+      }))
+    )
+  );
+
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+  const options = {
+    groupOrder: 'id',
+    orientation: 'top',
+    verticalScroll: true,
+    horizontalScroll: true,
+    zoomable: false,
+    moveable: false,
+    stack: false,
+    showCurrentTime: false,
+    timeAxis: { scale: 'minute', step: 30 },
+    start: new Date('1970-01-01T06:00:00'),
+    end: new Date('1970-01-01T22:30:00'),
+    min: new Date('1970-01-01T00:00:00'),
+    max: new Date('1970-01-01T23:59:59'),
+    width: isMobile ? '1800px' : '2400px',
+    height: isMobile ? '560px' : '680px',
+    margin: {
+      item: 12,
+      axis: 10,
+    },
+  };
+
+  if (!timeline) {
+    timeline = new vis.Timeline(timelineContainer, items, groups, options);
+  } else {
+    timeline.setItems(items);
+    timeline.setGroups(groups);
+    timeline.setOptions(options);
+  }
+}
+
+window.drawTimeline = drawTimeline;
+window.refreshCarTimeline = () => drawTimeline(currentYear, currentMonth);

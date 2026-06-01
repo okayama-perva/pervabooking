@@ -130,6 +130,40 @@
       </section>
     </main>
 
+    <div id="cancelModal" class="modal-backdrop hidden" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="cancelModalTitle">
+        <div class="modal-head">
+          <h3 id="cancelModalTitle" class="modal-title">予約の取り消し</h3>
+          <button type="button" id="cancelModalClose" class="modal-close" aria-label="閉じる">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="cancelModalMessage" class="modal-message"></p>
+          <dl class="modal-detail-list">
+            <div>
+              <dt>利用者</dt>
+              <dd id="cancelModalUser"></dd>
+            </div>
+            <div>
+              <dt>車両</dt>
+              <dd id="cancelModalCar"></dd>
+            </div>
+            <div>
+              <dt>日時</dt>
+              <dd id="cancelModalDateTime"></dd>
+            </div>
+            <div>
+              <dt>メモ</dt>
+              <dd id="cancelModalMemo">なし</dd>
+            </div>
+          </dl>
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="cancelModalDismiss" class="modal-btn modal-btn-secondary">戻る</button>
+          <button type="button" id="cancelModalConfirm" class="modal-btn modal-btn-danger">予約を取り消す</button>
+        </div>
+      </div>
+    </div>
+
     <script src="./js/formUI.js"></script>
     <script src="./js/main.js"></script>
     <script src="./js/car_listanime.js"></script>

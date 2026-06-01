@@ -5,6 +5,11 @@
   return `${y}-${m}-${d}`;
 }
 
+const CAR_CALENDAR_API_URL =
+  'https://script.google.com/macros/s/AKfycbzdsWjVm75VoFfdNd5m4ir3bs-S5BJVe2MyWmrkJsuPUTmoGmQ7dRPxFoCBQ2U905VJ/exec';
+
+window.carCalendarApiUrl = CAR_CALENDAR_API_URL;
+
 function buildDailyTimeRange(startDate, startTime, endTime) {
   return [{ date: startDate, startTime, endTime }];
 }
@@ -93,6 +98,10 @@ document.getElementById('reservationForm').addEventListener('submit', async (e) 
     const ranges = multiDay
       ? buildMultiDayTimeRanges(startDate, endDate, startTime, endTime)
       : buildDailyTimeRange(startDate, startTime, endTime);
+    const reservationGroupId =
+      multiDay && ranges.length > 1
+        ? `car-group-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+        : null;
 
     const conflict = await hasConflict(car, ranges);
     if (conflict) {
@@ -103,9 +112,6 @@ document.getElementById('reservationForm').addEventListener('submit', async (e) 
     const uid = auth.currentUser.uid;
     const userDoc = await db.collection('users').doc(uid).get();
     const username = userDoc.exists ? userDoc.data().username : '未登録';
-
-    const calendarApiUrl =
-      'https://script.google.com/macros/s/AKfycbzdsWjVm75VoFfdNd5m4ir3bs-S5BJVe2MyWmrkJsuPUTmoGmQ7dRPxFoCBQ2U905VJ/exec';
 
     const reservations = [];
 
@@ -121,7 +127,7 @@ document.getElementById('reservationForm').addEventListener('submit', async (e) 
         colorId: '6',
       });
 
-      const res = await fetch(calendarApiUrl, { method: 'POST', body: params });
+      const res = await fetch(CAR_CALENDAR_API_URL, { method: 'POST', body: params });
       const result = await res.json();
 
       if (result.status !== 'success') {
@@ -133,6 +139,7 @@ document.getElementById('reservationForm').addEventListener('submit', async (e) 
         date: range.date,
         startTime: range.startTime,
         endTime: range.endTime,
+        groupId: reservationGroupId,
         memo,
         uid,
         username,

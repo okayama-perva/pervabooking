@@ -2,6 +2,7 @@
 <html lang="ja">
    <head>
       <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>お菓子いいね投票システム</title>
       <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
       <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -11,40 +12,112 @@
       <script src="../common/authGuard.js"></script>
 
       <script src="https://cdn.tailwindcss.com"></script>
-   </head>
-   <body class="bg-pink-50 min-h-screen flex flex-col items-center p-6">
-      <h1 class="text-3xl font-bold text-pink-600 mb-6">🍬 PERVA　BOX常設お菓子希望！</h1>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+         href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap"
+         rel="stylesheet"
+      />
+      <script>
+         tailwind.config = {
+            theme: {
+               extend: {
+                  colors: {
+                     candyPink: '#ff77aa',
+                     candyRose: '#ff91b6',
+                  },
+               },
+            },
+         };
+      </script>
+      <style>
+         body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background:
+               radial-gradient(circle at 8% 8%, #ffd6e6 0%, transparent 36%),
+               radial-gradient(circle at 92% 12%, #ffeebd 0%, transparent 34%),
+               linear-gradient(180deg, #fffaf2 0%, #ffeef4 100%);
+         }
 
-      <div class="w-full max-w-md bg-white p-6 rounded-xl shadow-md mb-8">
-         <h2 class="text-xl font-semibold mb-4 text-pink-700">お菓子を登録</h2>
-         <strong>まずは読んでください</strong>
-         <p class="text-sm text-gray-600 mb-4">
+         .sprinkle-bg::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.18;
+            background:
+               radial-gradient(circle at 20% 25%, rgba(255, 179, 204, 0.35) 0 6px, transparent 7px),
+               radial-gradient(circle at 78% 32%, rgba(255, 210, 128, 0.3) 0 5px, transparent 6px),
+               radial-gradient(circle at 62% 72%, rgba(255, 179, 204, 0.25) 0 7px, transparent 8px),
+               radial-gradient(circle at 30% 80%, rgba(255, 210, 128, 0.22) 0 6px, transparent 7px);
+         }
+
+         .candy-card {
+            background: rgba(255, 255, 255, 0.92);
+            border: 2px solid #ffd3e6;
+            box-shadow: 0 14px 28px rgba(255, 119, 170, 0.14);
+         }
+
+         .candy-title {
+            text-shadow: 0 3px 0 #fff;
+         }
+
+         #snackList > div {
+            border: 2px solid #ffd9e9;
+            box-shadow: 0 10px 20px rgba(255, 119, 170, 0.12);
+            border-radius: 1rem;
+            background: linear-gradient(180deg, #ffffff 0%, #fff8fb 100%);
+         }
+
+         #snackList img {
+            border-radius: 0.9rem;
+            border: 2px solid #ffe4ef;
+         }
+
+         #snackList button {
+            font-weight: 700;
+            box-shadow: 0 6px 14px rgba(255, 119, 170, 0.2);
+         }
+
+         #snackList button:hover {
+            transform: translateY(-1px);
+         }
+      </style>
+   </head>
+   <body class="sprinkle-bg min-h-screen px-4 py-8 md:px-6">
+      <div class="mx-auto w-full max-w-5xl">
+      <h1 class="candy-title mb-6 text-center text-3xl font-extrabold text-candyPink md:text-4xl">🍬 PERVA　BOX常設お菓子希望！</h1>
+
+      <div class="mb-8 candy-card rounded-3xl p-6 md:p-8">
+         <h2 class="mb-4 text-xl font-bold text-candyPink">お菓子を登録</h2>
+         <strong class="block text-rose-500">まずは読んでください</strong>
+         <p class="mb-5 mt-2 text-sm leading-7 text-gray-700 md:text-base">
             お菓子の名前を登録してください。画像・リンクは任意ですがある方がわかりやすいので購入時に助かります。<br />
             お菓子は200円前後のものを想定しています。シェア品は考えてません。<br />
             登録したお菓子は一覧に表示され、常設品に設置するものを検討しているので参考にします。<br />
             自分・他のメンバーが「いいね」を投票できます。いいねは何回でもできます！<br />
          </p>
-         <form id="snackForm" class="flex flex-col space-y-3">
+         <form id="snackForm" class="flex flex-col gap-3">
             <input
                type="text"
                id="name"
                placeholder="お菓子の名前（必須）"
                required
-               class="border border-pink-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
+               class="rounded-xl border-2 border-pink-200 bg-white px-4 py-3 text-gray-700 focus:outline-none focus:ring-4 focus:ring-pink-200"
             />
 
-            <input type="file" id="image" accept="image/*" class="text-sm" />
+            <input type="file" id="image" accept="image/*" class="rounded-xl border-2 border-dashed border-pink-200 bg-pink-50 p-3 text-sm text-gray-600" />
 
             <input
                type="url"
                id="link"
                placeholder="商品ページのリンク（任意）"
-               class="border border-pink-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
+               class="rounded-xl border-2 border-pink-200 bg-white px-4 py-3 text-gray-700 focus:outline-none focus:ring-4 focus:ring-pink-200"
             />
 
             <button
                type="submit"
-               class="bg-pink-400 text-white py-2 rounded hover:bg-pink-500 transition"
+               class="mt-2 rounded-xl bg-candyPink py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-candyRose"
             >
                登録する
             </button>
@@ -52,13 +125,15 @@
       </div>
       <a
          href="/perva_booking/index.html"
-         class="text-sm text-gray-700 underline hover:text-blue-600"
+         class="text-sm font-medium text-gray-700 underline decoration-pink-300 underline-offset-4 hover:text-candyPink"
       >
          トップページへ
       </a>
-      <div class="w-full max-w-3xl">
-         <h2 class="text-2xl font-bold mb-4 text-pink-600">🍭 お菓子一覧</h2>
-         <div id="snackList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      <div class="w-full">
+         <h2 class="candy-title mb-4 text-center text-2xl font-extrabold text-candyPink">🍭 お菓子一覧</h2>
+         <div id="snackList" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
+      </div>
+
       </div>
 
       <script src="./js/main.js"></script>

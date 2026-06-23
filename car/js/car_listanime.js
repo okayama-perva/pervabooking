@@ -246,7 +246,7 @@ async function drawTimeline(year, month) {
     groupOrder: 'id',
     orientation: 'top',
     verticalScroll: true,
-    horizontalScroll: true,
+    horizontalScroll: false,
     zoomable: false,
     moveable: false,
     stack: false,

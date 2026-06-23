@@ -74,8 +74,9 @@ function register() {
     [emailInput, passwordInput].forEach((input) => {
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-          e.preventDefault(); // submitなどのデフォルト動作防止
-          login(); // ログイン実行
+          e.preventDefault();
+          if (loginBtn) login();
+          else if (registerBtn) register();
         }
       });
     });

@@ -21,6 +21,6 @@ auth.onAuthStateChanged((user) => {
 			loadReservedRanges(room, today);
 		}
 	} else {
-		window.location.href = '/auth/login.html';
+		window.location.href = '/perva_booking/auth/login.html';
 	}
 });

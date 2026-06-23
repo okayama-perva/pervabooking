@@ -9,12 +9,12 @@ auth.onAuthStateChanged((user) => {
 			await auth.signOut();
 			localStorage.removeItem('authExpireAt');
 			alert('セッションが切れました。再度ログインしてください。');
-			window.location.href = 'https://okayu.icurus.jp/perva_booking/auth/login.html';
+			window.location.href = 'https://banajin.jp/perva_booking/auth/login.html';
 		})();
 	}
 
 	if (!user) {
 		// 本番では修正が必要
-		window.location.href = 'https://okayu.icurus.jp/perva_booking/auth/login.html';
+		window.location.href = 'https://banajin.jp/perva_booking/auth/login.html';
 	}
 });
